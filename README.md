@@ -1,5 +1,5 @@
 # KeepUp
-**Modern Accounting Software for Small Businesses**
+**Modern Accounting Software for Small Businesses** <br>
 KeepUp is a full-stack bookkeeping and financial management application designed to help small businesses track transactions, manage accounts, and generate core financial statements with clarity and confidence.<br><br>
 
 Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE) project, KeepUp aims to combine accounting principles with a clean, modern user interface.
@@ -25,7 +25,7 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 - Account management
 - Visual summaries of financial data
 - Clean, modular React frontend
-<br> 
+<hr> 
 
 ## Tech Stack
 **Frontend**:
@@ -45,16 +45,16 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 <hr> 
 
 ## Running thr Project Locally
-1. Navigate into the frontend directory <br>
+1. Navigate into the frontend directory: <br>
 "`cd frontend`"
 
-2. Install dependencies <br>
+2. Install dependencies: <br>
 "`npm install`"
 
-3. Start the development server <br>
+3. Start the development server: <br>
 "`npm run dev`"
 
-4. Run the app >br>
+4. Run the app: <br>
 Head to: [http://localhost:5173](http://localhost:5173)
 <hr> 
 
