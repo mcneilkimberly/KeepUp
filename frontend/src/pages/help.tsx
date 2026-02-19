@@ -3,8 +3,7 @@ export default function Help() {
         <div>
             <h1 className="pageTitle">Help</h1>
             <p className="muted" style={{ maxWidth: 760, marginTop: 12 }}>
-                This page will become a mini knowledge base (FAQs, docs, and contact). For now,
-                here's a simple FAQ layout using native <code>&lt;details&gt;</code> elements.
+                This page will become a mini knowledge base (FAQs, docs, and whatnot). 
             </p>
 
             <div className="grid">
