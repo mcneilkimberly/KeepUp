@@ -6,8 +6,6 @@ import Statements from "./pages/statements";
 import Help from "./pages/help";
 import "./App.css";
 
-
-// Put your real logo in this file path (we'll create it below)
 import keepUpLogo from "/keepup-logo.svg";
 
 function NavItem({ to, label }: { to: string; label: string }) {
@@ -29,7 +27,6 @@ export default function App() {
                 <img className="brandLogo" src={keepUpLogo} alt="" aria-hidden="true" />
                 <span className="brand">KeepUp</span>
             </Link>
-
 
             <nav className="nav" aria-label="Primary navigation">
                 <NavItem to="/" label="Home" />
@@ -63,6 +60,7 @@ export default function App() {
 
       <footer className="appFooter">
         <div className="appContainer footerWrap">
+            
             {/* Top: centered brand */}
             <div className="footerTop">
             <Link to="/" className="footerBrandLink" aria-label="Go to KeepUp home">

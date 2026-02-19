@@ -3,8 +3,7 @@ export default function Journal() {
         <div>
             <h1 className="pageTitle">Journal</h1>
             <p className="muted" style={{ maxWidth: 760, marginTop: 12 }}>
-                Record transactions here. In a full version, each entry would post to the
-                database, validate debits = credits, and then feed the Ledger and Statements.
+                Record transactions here. 
             </p>
 
             <div className="grid">

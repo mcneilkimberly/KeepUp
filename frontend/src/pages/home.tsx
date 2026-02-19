@@ -12,7 +12,7 @@ export default function Home() {
             <div className="card" style={{ gridColumn: "span 8" }}>
             <div className="row" style={{ marginBottom: 10 }}>
                 <h2 className="cardTitle" style={{ margin: 0 }}>Quick actions</h2>
-                <span className="pill"><i>Prototype mode</i></span>
+                <span className="pill"><i>Prototype</i></span>
             </div>
 
             <div className="grid" style={{ marginTop: 0 }}>
@@ -63,7 +63,7 @@ export default function Home() {
             <div className="card" style={{ gridColumn: "span 12" }}>
             <div className="row" style={{ marginBottom: 10 }}>
                 <h2 className="cardTitle" style={{ margin: 0 }}>Recent activity</h2>
-                <span className="pill">Placeholder list</span>
+                <span className="pill">~Placeholder list~</span>
             </div>
 
             <table className="table">
