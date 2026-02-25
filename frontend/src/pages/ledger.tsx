@@ -1,4 +1,101 @@
+import { useState } from "react";
+
+// modal used for both adding and renaming
+function AccountModal({
+    initialName = "",
+    onSave,
+    onClose,
+}: {
+    initialName?: string;
+    onSave: (name: string) => void;
+    onClose: () => void;
+}) {
+    const [name, setName] = useState(initialName);
+    return (
+        <div
+            style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1000,
+            }}
+        >
+            <div
+                style={{
+                    background: "#1e1e1e",
+                    padding: 20,
+                    borderRadius: 6,
+                    width: 300,
+                }}
+            >
+                <h3>{initialName ? "Rename account" : "Add account"}</h3>
+                <input
+                    className="input"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Account name"
+                    style={{ width: "100%" }}
+                />
+                <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                    <button
+                        className="btn btnPrimary"
+                        type="button"
+                        onClick={() => {
+                            const trimmed = name.trim();
+                            if (trimmed) {
+                                onSave(trimmed);
+                            }
+                        }}
+                    >
+                        Save
+                    </button>
+                    <button className="btn" type="button" onClick={onClose}>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function Ledger() {
+    const [accounts, setAccounts] = useState<string[]>([
+        "Cash",
+        "Accounts Receivable",
+        "Inventory",
+        "Accounts Payable",
+        "Revenue",
+        "Expenses",
+    ]);
+    const [isAdding, setIsAdding] = useState(false);
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+
+    function addAccount(name: string) {
+        setAccounts((prev) => [...prev, name]);
+        setSelectedAccount(name);
+    }
+
+    function renameAccount(newName: string) {
+        if (selectedAccount == null) return;
+        setAccounts((prev) =>
+            prev.map((a) => (a === selectedAccount ? newName : a))
+        );
+        setSelectedAccount(newName);
+    }
+
+    function deleteAccount() {
+        if (selectedAccount == null) return;
+        setAccounts((prev) => prev.filter((a) => a !== selectedAccount));
+        setSelectedAccount(null);
+    }
+
     return (
         <div>
             <h1 className="pageTitle">Ledger</h1>
@@ -14,20 +111,69 @@ export default function Ledger() {
                 </div>
 
                 <div style={{ display: "grid", gap: 8 }}>
-                    <button className="btn btnPrimary" type="button">+ Add account</button>
-                    <button className="btn" type="button">Rename</button>
-                    <button className="btn" type="button">Delete</button>
+                    <button
+                        className="btn btnPrimary"
+                        type="button"
+                        onClick={() => setIsAdding(true)}
+                    >
+                        + Add account
+                    </button>
+                    <button
+                        className="btn"
+                        type="button"
+                        onClick={() => {
+                            if (selectedAccount) {
+                                setIsRenaming(true);
+                            }
+                        }}
+                        disabled={!selectedAccount}
+                    >
+                        Rename
+                    </button>
+                    <button
+                        className="btn"
+                        type="button"
+                        onClick={deleteAccount}
+                        disabled={!selectedAccount}
+                    >
+                        Delete
+                    </button>
                 </div>
 
                 <hr style={{ border: 0, borderTop: "1px solid rgba(255,255,255,0.08)", margin: "16px 0" }} />
 
                 <div style={{ display: "grid", gap: 8 }}>
-                    {["Cash","Accounts Receivable","Inventory","Accounts Payable","Revenue","Expenses"].map((name) => (
-                    <button key={name} className="btn" type="button" style={{ textAlign: "left" }}>
+                    {accounts.map((name) => (
+                    <button
+                        key={name}
+                        className="btn"
+                        type="button"
+                        style={{ textAlign: "left" }}
+                        onClick={() => setSelectedAccount(name)}
+                    >
                         {name}
                     </button>
                     ))}
                 </div>
+                {isAdding && (
+                    <AccountModal
+                        onSave={(name) => {
+                            addAccount(name);
+                            setIsAdding(false);
+                        }}
+                        onClose={() => setIsAdding(false)}
+                    />
+                )}
+                {isRenaming && selectedAccount && (
+                    <AccountModal
+                        initialName={selectedAccount}
+                        onSave={(name) => {
+                            renameAccount(name);
+                            setIsRenaming(false);
+                        }}
+                        onClose={() => setIsRenaming(false)}
+                    />
+                )}
 
                 <p className="muted" style={{ fontSize: 13, marginBottom: 0, marginTop: 14 }}>
                     Tip: selecting an account will filter the table on the right.
@@ -37,8 +183,12 @@ export default function Ledger() {
                 <div className="card" style={{ gridColumn: "span 9" }}>
                 <div className="row" style={{ marginBottom: 10 }}>
                     <div>
-                    <h2 className="cardTitle" style={{ margin: 0 }}>Select an account</h2>
-                    <div className="muted" style={{ marginTop: 4 }}>No account selected</div>
+                    <h2 className="cardTitle" style={{ margin: 0 }}>
+                        {selectedAccount ?? "Select an account"}
+                    </h2>
+                    <div className="muted" style={{ marginTop: 4 }}>
+                        {selectedAccount ? `Showing entries for ${selectedAccount}` : "No account selected"}
+                    </div>
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -64,13 +214,21 @@ export default function Ledger() {
                         </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td className="muted">—</td>
-                        <td className="muted">No account selected</td>
-                        <td className="muted">—</td>
-                        <td className="muted">—</td>
-                        <td className="muted">—</td>
-                    </tr>
+                    {selectedAccount ? (
+                        <tr>
+                            <td colSpan={5} className="muted" style={{ textAlign: "center" }}>
+                                No entries for {selectedAccount}
+                            </td>
+                        </tr>
+                    ) : (
+                        <tr>
+                            <td className="muted">—</td>
+                            <td className="muted">No account selected</td>
+                            <td className="muted">—</td>
+                            <td className="muted">—</td>
+                            <td className="muted">—</td>
+                        </tr>
+                    )}
                     </tbody>
                 </table>
                 </div>
