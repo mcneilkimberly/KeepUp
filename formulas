@@ -1,0 +1,45 @@
+// Set placeholder numbers until we can link to DB
+//let likely better than const as these values will be always changing
+let cash = 10000
+let accountsRecievable = 5000
+let currentAssets = cash + accountsRecievable + 1000
+let currentLiabilities = 9000
+let revenues = 124572
+let expenses = 28546
+let assets = currentAssets + 100
+let liabilities = currentLiabilities + 197
+let creditSales = 135824
+
+
+// Calculate Current Ratio
+let currentRatio = currentAssets/currentLiabilities
+
+//Calculate Quick Ratio
+let quickRatio = (cash + accountsRecievable)/currentLiabilities
+
+//Calculate Profit Margin
+let pMargin = (revenues-expenses)/revenues
+
+//Calculate Debt Ratio
+let dRatio = liabilities/assets
+
+//Calculate A/R Turnover
+//*Usually we should use the average accounts recievable, but that would bloat the file too much for just a temporary value!*
+let arTvrRatio = creditSales / accountsRecievable
+
+
+// Following ratios commented out to prevent bloat on placeholder variables. 
+// We don't need to include all of these, some of them are better for larger companies.
+
+//Calculate Inventory Turnover
+//let iTvr = costOfGoodsSold/inventory
+
+//Calculate Total Asset Turnover
+//let tAssetTvr = sales/totalAssets
+
+//Fixed Asset Turnover
+// let fAssetTvr = sales/totalFixedAssets
+
+//Times Interest Earned
+// let tIntEarned = operatingProfits / interestExpense
+

@@ -1,0 +1,29 @@
+// Initialize basic variables
+let initialVal = 10000
+let usefulLife = 5
+let salvageVal = 1000
+let accumDepr = 0
+let depr = 0
+
+function straightLineDepreciation(initialVal: number, usefulLife: number, salvageVal: number){
+    let depr = (initialVal-salvageVal)/usefulLife
+    return depr
+}
+
+// This method declines the balance of the asset faster
+function doubleDecliningBalance(initialVal:number, usefulLife:number, salvageVal:number){
+    let rate = straightLineDepreciation(initialVal, usefulLife, salvageVal) / initialVal
+    rate *= 2
+    // For demo purposes only. Using this method, we would multiply the rate by the real value (intial value - accumulated depreciation)
+    let depr = (initialVal-accumDepr) * rate
+    return depr
+}
+
+// All depreciation methods are yearly. We can calculate monthly too, but that would require tweaks in the formula. 
+depr = straightLineDepreciation(initialVal, usefulLife, salvageVal)
+console.log("Yearly depreciation with the Straight Line Method will be $", depr)
+depr = doubleDecliningBalance(initialVal, usefulLife, salvageVal)
+accumDepr += depr
+console.log("Yearly depreciation with the DDB Method will be $", depr)
+
+//Units of Production depreciation calculation can be added, if we want.
