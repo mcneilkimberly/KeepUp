@@ -1,4 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// helpers
+const API = (path: string) => `${import.meta.env.VITE_API_BASE || "http://localhost:3001"}${path}`;
+
+interface Account {
+    id: number;
+    name: string;
+}
+
+interface Entry {
+    date: string;
+    description: string;
+    debit: string;
+    credit: string;
+}
 
 // entry form modal
 function EntryModal({
@@ -148,70 +163,96 @@ function AccountModal({
 }
 
 export default function Ledger() {
-    const [accounts, setAccounts] = useState<string[]>([
-        "Cash",
-        "Accounts Receivable",
-        "Inventory",
-        "Accounts Payable",
-        "Revenue",
-        "Expenses",
-    ]);
-    const [entries, setEntries] = useState<Record<string, Array<{
-        date: string;
-        description: string;
-        debit: string;
-        credit: string;
-    }>>>({});
+    const [accounts, setAccounts] = useState<Account[]>([]);
+    const [entries, setEntries] = useState<Record<number, Entry[]>>({});
 
     const [isAdding, setIsAdding] = useState(false);
     const [isRenaming, setIsRenaming] = useState(false);
     const [isAddingEntry, setIsAddingEntry] = useState(false);
-    const [selectedAccount, setSelectedAccount] = useState<string | null>(null);
+    const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+
+    // fetch accounts on load
+    useEffect(() => {
+        fetch(API("/accounts"))
+            .then((r) => r.json())
+            .then((data: Account[]) => setAccounts(data))
+            .catch(console.error);
+    }, []);
+
+    // fetch entries when account changes
+    useEffect(() => {
+        if (!selectedAccount) return;
+        fetch(API(`/accounts/${selectedAccount.id}/entries`))
+            .then((r) => r.json())
+            .then((data: Entry[]) =>
+                setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
+            )
+            .catch(console.error);
+    }, [selectedAccount]);
 
     function addAccount(name: string) {
-        setAccounts((prev) => [...prev, name]);
-        setSelectedAccount(name);
+        fetch(API("/accounts"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name }),
+        })
+            .then((r) => r.json())
+            .then((acct: Account) => {
+                setAccounts((prev) => [...prev, acct]);
+                setSelectedAccount(acct);
+            })
+            .catch(console.error);
     }
 
     function renameAccount(newName: string) {
-        if (selectedAccount == null) return;
-        setAccounts((prev) =>
-            prev.map((a) => (a === selectedAccount ? newName : a))
-        );
-        // move entries to new key if any
-        setEntries((prev) => {
-            const newEntries = { ...prev };
-            if (newEntries[selectedAccount]) {
-                newEntries[newName] = newEntries[selectedAccount];
-                delete newEntries[selectedAccount];
-            }
-            return newEntries;
+        if (!selectedAccount) return;
+        fetch(API(`/accounts/${selectedAccount.id}`), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: newName }),
+        }).then(() => {
+            setAccounts((prev) =>
+                prev.map((a) =>
+                    a.id === selectedAccount.id ? { ...a, name: newName } : a
+                )
+            );
+            setSelectedAccount((a) => (a ? { ...a, name: newName } : null));
         });
-        setSelectedAccount(newName);
     }
 
     function deleteAccount() {
-        if (selectedAccount == null) return;
-        setAccounts((prev) => prev.filter((a) => a !== selectedAccount));
-        setEntries((prev) => {
-            const n = { ...prev };
-            delete n[selectedAccount];
-            return n;
+        if (!selectedAccount) return;
+        fetch(API(`/accounts/${selectedAccount.id}`), { method: "DELETE" }).then(() => {
+            setAccounts((prev) => prev.filter((a) => a.id !== selectedAccount.id));
+            setEntries((prev) => {
+                const n = { ...prev };
+                delete n[selectedAccount.id];
+                return n;
+            });
+            setSelectedAccount(null);
         });
-        setSelectedAccount(null);
     }
 
-    function addEntry(entry: { date: string; description: string; debit: string; credit: string; }) {
+    function addEntry(entry: Entry) {
         if (!selectedAccount) return;
-        setEntries((prev) => {
-            const accountEntries = prev[selectedAccount] || [];
-            return { ...prev, [selectedAccount]: [...accountEntries, entry] };
+        fetch(API(`/accounts/${selectedAccount.id}/entries`), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(entry),
+        }).then(() => {
+            setEntries((prev) => {
+                const accountEntries = prev[selectedAccount.id] || [];
+                return {
+                    ...prev,
+                    [selectedAccount.id]: [...accountEntries, entry],
+                };
+            });
         });
     }
 
     function exportCsv() {
         if (!selectedAccount) return;
-        const accountEntries = entries[selectedAccount] || [];
+        const accountEntries = entries[selectedAccount.id] || [];
         const header = ["Date", "Description", "Debit", "Credit"].join(",");
         const rows = accountEntries.map(e => [e.date, e.description, e.debit, e.credit].map(v => `"${v.replace(/"/g, '""')}"`).join(","));
         const csv = [header, ...rows].join("\n");
@@ -219,7 +260,7 @@ export default function Ledger() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${selectedAccount}-ledger.csv`;
+        a.download = `${selectedAccount.name}-ledger.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -273,15 +314,15 @@ export default function Ledger() {
                 <hr style={{ border: 0, borderTop: "1px solid rgba(255,255,255,0.08)", margin: "16px 0" }} />
 
                 <div style={{ display: "grid", gap: 8 }}>
-                    {accounts.map((name) => (
+                    {accounts.map((acct) => (
                     <button
-                        key={name}
+                        key={acct.id}
                         className="btn"
                         type="button"
                         style={{ textAlign: "left" }}
-                        onClick={() => setSelectedAccount(name)}
+                        onClick={() => setSelectedAccount(acct)}
                     >
-                        {name}
+                        {acct.name}
                     </button>
                     ))}
                 </div>
@@ -296,7 +337,7 @@ export default function Ledger() {
                 )}
                 {isRenaming && selectedAccount && (
                     <AccountModal
-                        initialName={selectedAccount}
+                        initialName={selectedAccount.name}
                         onSave={(name) => {
                             renameAccount(name);
                             setIsRenaming(false);
@@ -323,10 +364,12 @@ export default function Ledger() {
                 <div className="row" style={{ marginBottom: 10 }}>
                     <div>
                     <h2 className="cardTitle" style={{ margin: 0 }}>
-                        {selectedAccount ?? "Select an account"}
+                        {selectedAccount ? selectedAccount.name : "Select an account"}
                     </h2>
                     <div className="muted" style={{ marginTop: 4 }}>
-                        {selectedAccount ? `Showing entries for ${selectedAccount}` : "No account selected"}
+                        {selectedAccount
+                            ? `Showing entries for ${selectedAccount.name}`
+                            : "No account selected"}
                     </div>
                     </div>
 
@@ -370,8 +413,8 @@ export default function Ledger() {
                     </thead>
                     <tbody>
                     {selectedAccount ? (
-                        (entries[selectedAccount] || []).length ? (
-                            (entries[selectedAccount] || []).map((e, idx) => (
+                        (entries[selectedAccount.id] || []).length ? (
+                            (entries[selectedAccount.id] || []).map((e, idx) => (
                                 <tr key={idx}>
                                     <td>{e.date}</td>
                                     <td>{e.description}</td>
@@ -383,7 +426,7 @@ export default function Ledger() {
                         ) : (
                             <tr>
                                 <td colSpan={5} className="muted" style={{ textAlign: "center" }}>
-                                    No entries for {selectedAccount}
+                                    No entries for {selectedAccount.name}
                                 </td>
                             </tr>
                         )

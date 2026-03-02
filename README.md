@@ -58,6 +58,12 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 Head to: [http://localhost:5173](http://localhost:5173)
 <hr> 
 
+5. **navigate to /backend**
+- npm install            # pulls in typescript, ts-node(-dev), @types/…
+- npm run dev            # start with live‑reload (ts-node-dev)
+- npm run build          # compile to `dist/`
+- npm start              # run compiled output
+
 ## Project Goals
 **KeepUp is being built with the following long-term goals in mind**:
 - Fully functional double-entry bookkeeping system
