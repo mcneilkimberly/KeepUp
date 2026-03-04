@@ -60,7 +60,6 @@ Head to: [http://localhost:5173](http://localhost:5173)
 
 5. **navigate to /backend**
 - npm install            # pulls in typescript, ts-node(-dev), @types/…
-- npm run dev            # start with live‑reload (ts-node-dev)
 - npm run build          # compile to `dist/`
 - npm start              # run compiled output
 
