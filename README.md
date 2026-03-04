@@ -46,7 +46,7 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 
 ## Running thr Project Locally
 1. **Navigate into the frontend directory**: <br>
-"`cd frontend`"
+"`cd server`"
 
 2. **Install dependencies**: <br>
 "`npm install`"
