@@ -23,6 +23,10 @@ async function initDatabase(){
         //     );
         //     `)
         //ACCOUNT SCHEMA CREATION TABLE 
+        await pool.query("CREATE DATABASE IF NOT EXISTS keepup;");
+        await pool.query("USE keepup;");
+
+        
         console.log("Creating accounts table")
         await pool.query(`
             CREATE TABLE IF NOT EXISTS accounts (
@@ -30,33 +34,32 @@ async function initDatabase(){
             business_id CHAR(36) NOT NULL,
             name VARCHAR(36) NOT NULL,
             type ENUM('asset','liability','equity','revenue','expense','contraasset','contraliability','contraequity') NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            CONSTRAINT fk_accounts_business # the business the accounts are for
-            FOREIGN KEY (business_id)
-            REFERENCES Businesses(id)
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             `);
 
         //ENTRIES SCHEMA CREATION TABLE
-        console.log("Creating entries table")
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS entries (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            account_id CHAR(36) NOT NULL,
-            date DATE NOT NULL,
-            description VARCHAR(250) NOT NULL,
-            debit DECIMAL(10,2) DEFAULT 0.00,
-            credit DECIMAL (10,2) DEFAULT 0.00,
-            FOREIGN KEY (account_id) REFERENCES accounts(id)
-            );
-            `);
+        // console.log("Creating entries table")
+        // await pool.query(`
+        //     CREATE TABLE IF NOT EXISTS entries (
+        //     id INT AUTO_INCREMENT PRIMARY KEY,
+        //     account_id CHAR(36) NOT NULL,
+        //     date DATE NOT NULL,
+        //     description VARCHAR(250) NOT NULL,
+        //     debit DECIMAL(10,2) DEFAULT 0.00,
+        //     credit DECIMAL (10,2) DEFAULT 0.00,
+        //     FOREIGN KEY (account_id) REFERENCES accounts(id)
+        //     );
+        //     `);
 
-        console.log("Databases have initialized! YAY!")
+        console.log("Tables have initialized! YAY!")
 
     } 
     catch (error){
-        console.error("Couldnt Initialize database", error);
+        console.error("Couldnt Initialize Tables", error);
+    }finally{
         await pool.end();
+
     }
 }
 
