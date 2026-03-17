@@ -16,12 +16,12 @@ export default function Statements() {
         alert("PDF export functionality would be implemented here");
     };
 
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat("en-US", {
-            style: "currency",
-            currency: "USD",
-        }).format(value);
-    };
+    // const formatCurrency = (value: number) => {
+    //     return new Intl.NumberFormat("en-US", {
+    //         style: "currency",
+    //         currency: "USD",
+    //     }).format(value);
+    // };
 
     const getStatementContent = () => {
         if (!generated) return null;
