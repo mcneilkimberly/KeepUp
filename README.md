@@ -46,19 +46,13 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 
 ## Running thr Project Locally
 1. **Navigate into the frontend directory**: <br>
-"`cd server`"
-
-2. **Install dependencies**: <br>
-"`npm install`"
-
-3. **Start the development server**: <br>
-"`npm run dev`"
-
-4. **Run the app**: <br>
-Head to: [http://localhost:5173](http://localhost:5173)
+- "`cd server`"
+- "`npm install`"
+- "`npm run dev`"
+- Head to: [http://localhost:5173](http://localhost:5173)
 <hr> 
 
-5. **navigate to /backend**
+3. **navigate to /backend**
 - npm install            # pulls in typescript, ts-node(-dev), @types/…
 - npm run build          # compile to `dist/`
 - npm start              # run compiled output
