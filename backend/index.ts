@@ -1,8 +1,10 @@
+
 import dotenv from "dotenv";
 dotenv.config();
 
 import express, { Request, Response } from "express";
 import mysql, { Pool } from "mysql2/promise";
+import { v4 as uuidv4 } from "uuid";
 
 const app = express();
 app.use(express.json());
@@ -19,56 +21,190 @@ initDb().catch(err => {
   process.exit(1);
 });
 
-/* accounts */
-app.get("/accounts", async (req: Request, res: Response) => {
-  const [rows] = await pool.query("SELECT id,name FROM accounts");
+// Helper to get or create a default user and business for backward compatibility
+async function getDefaultBusinessId() {
+  const [businesses]: any = await pool.query("SELECT id FROM business LIMIT 1");
+  if (businesses.length > 0) return businesses[0].id;
+
+  // Insert default user
+  const [userResult]: any = await pool.query(
+    "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
+    ["default_user", "default@test.com", "hash"]
+  );
+  
+  // Insert default business
+  const businessId = uuidv4();
+  await pool.query(
+    "INSERT INTO business (id, name, business_type, owner_id) VALUES (?, ?, ?, ?)",
+    [businessId, "Default Business", "sole_prop", userResult.insertId]
+  );
+  return businessId;
+}
+
+/* ---------------- USERS & BUSINESSES (NEW) ---------------- */
+app.get("/users", async (req: Request, res: Response) => {
+  const [rows] = await pool.query("SELECT id, username, email FROM users");
   res.json(rows);
 });
 
-app.post("/accounts", async (req: Request, res: Response) => {
-  const { name } = req.body as { name: string };
-  const [result] = await pool.query("INSERT INTO accounts (name) VALUES (?)", [name]);
-  res.status(201).json({ id: (result as any).insertId, name });
+app.get("/businesses", async (req: Request, res: Response) => {
+  const [rows] = await pool.query("SELECT * FROM business");
+  res.json(rows);
 });
 
-app.put("/accounts/:id", async (req: Request, res: Response) => {
+
+/* ---------------- ACCOUNTS ---------------- */
+app.get("/account", async (req: Request, res: Response) => {
+  const [rows] = await pool.query("SELECT id, name, type, business_id FROM account");
+  res.json(rows);
+});
+
+app.post("/account", async (req: Request, res: Response) => {
+  const { name, type, business_id } = req.body;
+  const newId = uuidv4();
+  
+  // Fallback values so the current frontend doesn't break
+  const finalType = type || "asset"; 
+  const finalBusinessId = business_id || await getDefaultBusinessId();
+
+  await pool.query(
+    "INSERT INTO account (id, business_id, name, type) VALUES (?, ?, ?, ?)",
+    [newId, finalBusinessId, name, finalType]
+  );
+  res.status(201).json({ id: newId, name, type: finalType, business_id: finalBusinessId });
+});
+
+app.put("/account/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name } = req.body as { name: string };
-  await pool.query("UPDATE accounts SET name = ? WHERE id = ?", [name, id]);
+  const { name } = req.body;
+  await pool.query("UPDATE account SET name = ? WHERE id = ?", [name, id]);
   res.sendStatus(204);
 });
 
-app.delete("/accounts/:id", async (req: Request, res: Response) => {
+app.delete("/account/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  await pool.query("DELETE FROM accounts WHERE id = ?", [id]);
-  await pool.query("DELETE FROM entries WHERE account_id = ?", [id]);
+  // Delete associated lines, entries, then account
+  await pool.query("DELETE FROM journalLines WHERE account_id = ?", [id]);
+  await pool.query("DELETE FROM account WHERE id = ?", [id]);
   res.sendStatus(204);
 });
 
-/* entries */
-app.get("/accounts/:id/entries", async (req: Request, res: Response) => {
+/* ---------------- JOURNAL ENTRIES & LINES ---------------- */
+app.get("/account/:id/entries", async (req: Request, res: Response) => {
   const { id } = req.params;
+  
+  // Fetch entries utilizing the new relationship (journalEntries -> journalLines -> account)
   const [rows] = await pool.query(
-    "SELECT date,description,debit,credit FROM entries WHERE account_id = ? ORDER BY date",
+    `SELECT e.entry_date as date, e.description, l.debit_amount as debit, l.credit_amount as credit 
+     FROM journalLines l
+     JOIN journalEntries e ON l.journal_entry_id = e.id
+     WHERE l.account_id = ? 
+     ORDER BY e.entry_date`,
     [id]
   );
   res.json(rows);
 });
 
-app.post("/accounts/:id/entries", async (req: Request, res: Response) => {
+app.post("/account/:id/entries", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { date, description, debit, credit } = req.body as {
-    date: string;
-    description: string;
-    debit: string;
-    credit: string;
-  };
-  await pool.query(
-    "INSERT INTO entries (account_id,date,description,debit,credit) VALUES (?,?,?,?,?)",
-    [id, date, description, debit, credit]
+  const { date, description, debit, credit } = req.body;
+  
+  const businessId = await getDefaultBusinessId();
+
+  // 1. Create the overarching Journal Entry
+  const [entryResult]: any = await pool.query(
+    "INSERT INTO journalEntries (business_id, created_by, entry_date, description) VALUES (?, ?, ?, ?)",
+    [businessId, 1, date, description] // Assuming user 1 created it for simplicity
   );
+  
+  const journalEntryId = entryResult.insertId;
+
+  // 2. Create the Journal Line for this specific account
+  await pool.query(
+    "INSERT INTO journalLines (journal_entry_id, account_id, debit_amount, credit_amount) VALUES (?, ?, ?, ?)",
+    [journalEntryId, id, debit || 0, credit || 0]
+  );
+
   res.sendStatus(201);
 });
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`server listening on ${port}`));
+
+
+
+
+// import dotenv from "dotenv";
+// dotenv.config();
+
+// import express, { Request, Response } from "express";
+// import mysql, { Pool } from "mysql2/promise";
+
+// const app = express();
+// app.use(express.json());
+
+// let pool: Pool;
+// async function initDb(): Promise<void> {
+//   if (!process.env.DB) {
+//     throw new Error("DB env var missing");
+//   }
+//   pool = await mysql.createPool(process.env.DB);
+// }
+// initDb().catch(err => {
+//   console.error("could not connect to database:", err);
+//   process.exit(1);
+// });
+
+// /* accounts */
+// app.get("/account", async (req: Request, res: Response) => {
+//   const [rows] = await pool.query("SELECT id,name FROM account");
+//   res.json(rows);
+// });
+
+// app.post("/account", async (req: Request, res: Response) => {
+//   const { name } = req.body as { name: string };
+//   const [result] = await pool.query("INSERT INTO account (name) VALUES (?)", [name]);
+//   res.status(201).json({ id: (result as any).insertId, name });
+// });
+
+// app.put("/account/:id", async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const { name } = req.body as { name: string };
+//   await pool.query("UPDATE account SET name = ? WHERE id = ?", [name, id]);
+//   res.sendStatus(204);
+// });
+
+// app.delete("/account/:id", async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   await pool.query("DELETE FROM account WHERE id = ?", [id]);
+//   await pool.query("DELETE FROM entries WHERE account_id = ?", [id]);
+//   res.sendStatus(204);
+// });
+
+// /* entries */
+// app.get("/account/:id/entries", async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const [rows] = await pool.query(
+//     "SELECT date,description,debit,credit FROM entries WHERE account_id = ? ORDER BY date",
+//     [id]
+//   );
+//   res.json(rows);
+// });
+
+// app.post("/account/:id/entries", async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const { date, description, debit, credit } = req.body as {
+//     date: string;
+//     description: string;
+//     debit: string;
+//     credit: string;
+//   };
+//   await pool.query(
+//     "INSERT INTO entries (account_id,date,description,debit,credit) VALUES (?,?,?,?,?)",
+//     [id, date, description, debit, credit]
+//   );
+//   res.sendStatus(201);
+// });
+
+// const port = process.env.PORT || 3001;
+// app.listen(port, () => console.log(`server listening on ${port}`));
