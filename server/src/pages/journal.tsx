@@ -55,7 +55,6 @@ export default function Journal() {
                 credit: credit || "0.00",
             }),
         })
-            .then((r) => r.json())
             .then(() => {
                 // Fetch and display all recent entries
                 fetchRecentEntries();

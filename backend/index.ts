@@ -94,6 +94,16 @@ app.delete("/account/:id", async (req: Request, res: Response) => {
 });
 
 /* ---------------- JOURNAL ENTRIES & LINES ---------------- */
+app.get("/entries", async (req: Request, res: Response) => {
+  const [rows] = await pool.query(
+    `SELECT e.entry_date as date, e.description, l.debit_amount as debit, l.credit_amount as credit 
+     FROM journalLines l
+     JOIN journalEntries e ON l.journal_entry_id = e.id
+     ORDER BY e.entry_date DESC`
+  );
+  res.json(rows);
+});
+
 app.get("/account/:id/entries", async (req: Request, res: Response) => {
   const { id } = req.params;
   
