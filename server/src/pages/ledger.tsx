@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 
 // helpers
-const API = (path: string) => `${import.meta.env.VITE_API_BASE || "http://localhost:3001"}${path}`;
-
+const API = (path: string) => `http://localhost:3001${path}`;
 interface Account {
-    id: number;
+    //id is a string because we're using uuids, so we'll just treat it as a string for flexibility
+    id: string;
     name: string;
 }
 
@@ -164,7 +164,8 @@ function AccountModal({
 
 export default function Ledger() {
     const [accounts, setAccounts] = useState<Account[]>([]);
-    const [entries, setEntries] = useState<Record<number, Entry[]>>({});
+    //I changed Record<number to Record<string> because account ids are uuids which are strings, so it makes more sense to type it this way
+    const [entries, setEntries] = useState<Record<string, Entry[]>>({});
 
     const [isAdding, setIsAdding] = useState(false);
     const [isRenaming, setIsRenaming] = useState(false);
@@ -173,7 +174,7 @@ export default function Ledger() {
 
     // fetch accounts on load
     useEffect(() => {
-        fetch(API("/accounts"))
+        fetch(API("/account"))
             .then((r) => r.json())
             .then((data: Account[]) => setAccounts(data))
             .catch(console.error);
@@ -182,7 +183,7 @@ export default function Ledger() {
     // fetch entries when account changes
     useEffect(() => {
         if (!selectedAccount) return;
-        fetch(API(`/accounts/${selectedAccount.id}/entries`))
+        fetch(API(`/account/${selectedAccount.id}/entries`))
             .then((r) => r.json())
             .then((data: Entry[]) =>
                 setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
@@ -191,7 +192,7 @@ export default function Ledger() {
     }, [selectedAccount]);
 
     function addAccount(name: string) {
-        fetch(API("/accounts"), {
+        fetch(API("/account"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name }),
@@ -206,7 +207,7 @@ export default function Ledger() {
 
     function renameAccount(newName: string) {
         if (!selectedAccount) return;
-        fetch(API(`/accounts/${selectedAccount.id}`), {
+        fetch(API(`/account/${selectedAccount.id}`), {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: newName }),
@@ -222,7 +223,7 @@ export default function Ledger() {
 
     function deleteAccount() {
         if (!selectedAccount) return;
-        fetch(API(`/accounts/${selectedAccount.id}`), { method: "DELETE" }).then(() => {
+        fetch(API(`/account/${selectedAccount.id}`), { method: "DELETE" }).then(() => {
             setAccounts((prev) => prev.filter((a) => a.id !== selectedAccount.id));
             setEntries((prev) => {
                 const n = { ...prev };
@@ -235,7 +236,7 @@ export default function Ledger() {
 
     function addEntry(entry: Entry) {
         if (!selectedAccount) return;
-        fetch(API(`/accounts/${selectedAccount.id}/entries`), {
+        fetch(API(`/account/${selectedAccount.id}/entries`), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(entry),

@@ -5,8 +5,10 @@ dotenv.config();
 import express, { Request, Response } from "express";
 import mysql, { Pool } from "mysql2/promise";
 import { v4 as uuidv4 } from "uuid";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 let pool: Pool;
@@ -22,6 +24,8 @@ initDb().catch(err => {
 });
 
 // Helper to get or create a default user and business for backward compatibility
+//backward compatibility: If the frontend forgets to send a business_id, thats okay, 
+// itll stay silently create a default business in the background and attach it to the account so the query still succeeds
 async function getDefaultBusinessId() {
   const [businesses]: any = await pool.query("SELECT id FROM business LIMIT 1");
   if (businesses.length > 0) return businesses[0].id;
