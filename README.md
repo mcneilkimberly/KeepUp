@@ -60,9 +60,12 @@ Head to: [http://localhost:5173](http://localhost:5173)
 
 5. **Navigate to /backend**
 - npm install            # pulls in typescript, ts-node(-dev), @types/…
-- npm run dev            # start with live‑reload (ts-node-dev)
-- npm run build          # compile to `dist/`
-- npm start              # run compiled output
+- npm install uuid       # pulls in universally unique identifier 
+- npm install -D@types/uuid       
+- npm install cors       # pulls in Cross-Origin Resource Sharing (CORS) in the Express/Connect applications
+- npm install -D @types/       
+
+- npm run dev           # run compiled output
 
 ## Project Goals
 **KeepUp is being built with the following long-term goals in mind**:
