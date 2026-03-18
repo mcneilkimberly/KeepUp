@@ -1,30 +1,71 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// helpers
+const API = (path: string) => `http://localhost:3001${path}`;
+
+interface Account {
+    id: string;
+    name: string;
+}
+
+interface Entry {
+    date: string;
+    description: string;
+    debit: string;
+    credit: string;
+}
 
 export default function Journal() {
     // State for form fields
     const [date, setDate] = useState("");
     const [description, setDescription] = useState("");
-    const [account, setAccount] = useState("");
+    const [accountId, setAccountId] = useState("");
     const [debit, setDebit] = useState("");
     const [credit, setCredit] = useState("");
-    const [entries, setEntries] = useState<Array<{ date: string; description: string; account: string; debit: string; credit: string }>>([]);
+    const [accounts, setAccounts] = useState<Account[]>([]);
+    const [entries, setEntries] = useState<Entry[]>([]);
+
+    function fetchRecentEntries() {
+        fetch(API("/entries"))
+            .then((r) => r.json())
+            .then((data: Entry[]) => setEntries(data))
+            .catch(console.error);
+    }
+
+    // Fetch accounts and recent entries on load
+    useEffect(() => {
+        fetch(API("/account"))
+            .then((r) => r.json())
+            .then((data: Account[]) => setAccounts(data))
+            .catch(console.error);
+
+        fetchRecentEntries();
+    }, []);
 
     function handleAddEntry() {
-        if (!date || !description || !account) return;
-        setEntries([
-            ...entries,
-            {
+        if (!date || !description || !accountId) return;
+        
+        fetch(API(`/account/${accountId}/entries`), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
                 date,
                 description,
-                account,
                 debit: debit || "0.00",
                 credit: credit || "0.00",
-            },
-        ]);
+            }),
+        })
+            .then((r) => r.json())
+            .then(() => {
+                // Fetch and display all recent entries
+                fetchRecentEntries();
+            })
+            .catch(console.error);
+        
         // Reset form
         setDate("");
         setDescription("");
-        setAccount("");
+        setAccountId("");
         setDebit("");
         setCredit("");
     }
@@ -53,13 +94,13 @@ export default function Journal() {
 
                         <label>
                             <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Account</div>
-                            <select className="input" value={account} onChange={e => setAccount(e.target.value)}>
+                            <select className="input" value={accountId} onChange={e => setAccountId(e.target.value)}>
                                 <option value="" disabled>Select an account…</option>
-                                <option>Cash</option>
-                                <option>Accounts Receivable</option>
-                                <option>Accounts Payable</option>
-                                <option>Revenue</option>
-                                <option>Expenses</option>
+                                {accounts.map((acct) => (
+                                    <option key={acct.id} value={acct.id}>
+                                        {acct.name}
+                                    </option>
+                                ))}
                             </select>
                         </label>
 
@@ -74,7 +115,7 @@ export default function Journal() {
                             </label>
                         </div>
 
-                        <button className="btn btnPrimary" type="button" onClick={handleAddEntry} disabled={!date || !description || !account}>
+                        <button className="btn btnPrimary" type="button" onClick={handleAddEntry} disabled={!date || !description || !accountId}>
                             Add entry
                         </button>
                     </div>
@@ -91,7 +132,6 @@ export default function Journal() {
                             <tr>
                                 <th style={{ width: 140 }}>Date</th>
                                 <th>Description</th>
-                                <th style={{ width: 160 }}>Account</th>
                                 <th style={{ width: 120 }}>Debit</th>
                                 <th style={{ width: 120 }}>Credit</th>
                             </tr>
@@ -102,7 +142,6 @@ export default function Journal() {
                                     <tr key={idx}>
                                         <td>{entry.date}</td>
                                         <td>{entry.description}</td>
-                                        <td>{entry.account}</td>
                                         <td>{entry.debit}</td>
                                         <td>{entry.credit}</td>
                                     </tr>
@@ -111,7 +150,6 @@ export default function Journal() {
                                 <tr>
                                     <td className="muted">—</td>
                                     <td className="muted">No entries recorded</td>
-                                    <td className="muted">—</td>
                                     <td className="muted">—</td>
                                     <td className="muted">—</td>
                                 </tr>
