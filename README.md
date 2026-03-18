@@ -52,7 +52,7 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 - Head to: [http://localhost:5173](http://localhost:5173)
 <hr> 
 
-3. **navigate to /backend**
+2. **navigate to /backend**
 - npm install            # pulls in typescript, ts-node(-dev), @types/…
 - npm run build          # compile to `dist/`
 - npm start              # run compiled output
