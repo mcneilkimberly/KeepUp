@@ -44,7 +44,7 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 - Git + GitHub workflow
 <hr> 
 
-## Running thr Project Locally
+## Running the Project Locally
 1. **Navigate into the frontend directory**: <br>
 "`cd server`"
 
