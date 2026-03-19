@@ -17,6 +17,25 @@ import { useState, useEffect } from "react";
 const API = (path: string) => `http://localhost:3001${path}`;
 
 /**
+ * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
+ * @param dateString Date in "YYYY-MM-DD" format
+ * @returns Formatted date string (e.g., "March 19, 2026")
+ */
+const formatDate = (dateString: string): string => {
+    if (!dateString) return "";
+    // Parse YYYY-MM-DD format safely without timezone issues
+    const [year, month, day] = dateString.split("-");
+    if (!year || !month || !day) return dateString; // Fallback if format is unexpected
+    
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+};
+
+/**
  * Account interface
  * Represents a single account from the database
  * - id: unique identifier (UUID string, not number)
@@ -102,7 +121,7 @@ function DeleteConfirmModal({
                     }}
                 >
                     <div style={{ marginBottom: 4 }}>
-                        <strong>Date:</strong> {entry.date}
+                        <strong>Date:</strong> {formatDate(entry.date)}
                     </div>
                     <div style={{ marginBottom: 4 }}>
                         <strong>Description:</strong> {entry.description}
@@ -866,7 +885,7 @@ export default function Ledger() {
                                                 transition: "background-color 0.2s",
                                             }}
                                         >
-                                            <td>{e.date}</td>
+                                            <td>{formatDate(e.date)}</td>
                                             <td>{e.description}</td>
                                             <td>{e.debit}</td>
                                             <td>{e.credit}</td>
