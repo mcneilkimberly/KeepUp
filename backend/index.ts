@@ -255,19 +255,19 @@ app.delete("/account/:id", async (req: Request, res: Response) => {
  * 1. Joins journalLines with journalEntries tables
  * 2. Selects date, description, debit, and credit amounts
  * 3. Orders by entry_date in descending order (most recent first)
- * 4. Returns all matching entries
+ * 4. Returns all matching entries with their line IDs
  * 
  * Returns: Array of entry objects
  * 
  * Response example:
  * [
- *   { date: "2026-03-18", description: "Office supplies", debit: "50.00", credit: "0.00" },
- *   { date: "2026-03-17", description: "Client payment", debit: "0.00", credit: "500.00" }
+ *   { id: 1, date: "2026-03-18", description: "Office supplies", debit: "50.00", credit: "0.00" },
+ *   { id: 2, date: "2026-03-17", description: "Client payment", debit: "0.00", credit: "500.00" }
  * ]
  */
 app.get("/entries", async (req: Request, res: Response) => {
   const [rows] = await pool.query(
-    `SELECT e.entry_date as date, e.description, l.debit_amount as debit, l.credit_amount as credit 
+    `SELECT l.id, e.entry_date as date, e.description, l.debit_amount as debit, l.credit_amount as credit 
      FROM journalLines l
      JOIN journalEntries e ON l.journal_entry_id = e.id
      ORDER BY e.entry_date DESC`
@@ -292,22 +292,23 @@ app.get("/entries", async (req: Request, res: Response) => {
  * 2. Queries journalLines where account_id matches
  * 3. Joins with journalEntries to get date and description
  * 4. Orders by entry_date (oldest to newest)
- * 5. Returns the filtered entries
+ * 5. Returns the filtered entries with their line IDs for deletion
  * 
  * Returns: Array of entry objects for that specific account
  * 
  * Response example:
  * [
- *   { date: "2026-03-15", description: "Initial deposit", debit: "1000.00", credit: "0.00" },
- *   { date: "2026-03-16", description: "Expense payment", debit: "50.00", credit: "0.00" }
+ *   { id: 1, date: "2026-03-15", description: "Initial deposit", debit: "1000.00", credit: "0.00" },
+ *   { id: 2, date: "2026-03-16", description: "Expense payment", debit: "50.00", credit: "0.00" }
  * ]
  */
 app.get("/account/:id/entries", async (req: Request, res: Response) => {
   const { id } = req.params;
   
   // Fetch entries utilizing the new relationship (journalEntries -> journalLines -> account)
+  // Include the journalLines id so we can delete individual entries
   const [rows] = await pool.query(
-    `SELECT e.entry_date as date, e.description, l.debit_amount as debit, l.credit_amount as credit 
+    `SELECT l.id, e.entry_date as date, e.description, l.debit_amount as debit, l.credit_amount as credit 
      FROM journalLines l
      JOIN journalEntries e ON l.journal_entry_id = e.id
      WHERE l.account_id = ? 
@@ -385,6 +386,60 @@ app.post("/account/:id/entries", async (req: Request, res: Response) => {
   );
 
   res.sendStatus(201);
+});
+
+/**
+ * DELETE /account/:id/entries/:entryId
+ * 
+ * Deletes a specific journal entry (line) for an account.
+ * 
+ * URL params:
+ * - id: account UUID that owns the entry
+ * - entryId: journalLines ID to delete
+ * 
+ * Steps:
+ * 1. Extracts account id and entry id from URL
+ * 2. Deletes the journal line from the database
+ * 3. Optionally cleans up orphaned journal entries (entries with no lines)
+ * 4. Returns 204 No Content on success
+ * 
+ * Note: The journalEntry itself is left in the database even if it has no lines.
+ * This preserves historical records. If you want to clean up orphaned entries,
+ * you can enable the cleanup query below.
+ */
+app.delete("/account/:id/entries/:entryId", async (req: Request, res: Response) => {
+  const { id, entryId } = req.params;
+  
+  // Get the journal_entry_id before deleting the line
+  const [lines]: any = await pool.query(
+    "SELECT journal_entry_id FROM journalLines WHERE id = ? AND account_id = ?",
+    [entryId, id]
+  );
+  
+  // Delete the journal line
+  await pool.query(
+    "DELETE FROM journalLines WHERE id = ? AND account_id = ?",
+    [entryId, id]
+  );
+  
+  // Optional: Clean up orphaned journal entries (entries with no lines)
+  if (lines.length > 0) {
+    const journalEntryId = lines[0].journal_entry_id;
+    const [remainingLines]: any = await pool.query(
+      "SELECT COUNT(*) as count FROM journalLines WHERE journal_entry_id = ?",
+      [journalEntryId]
+    );
+    
+    // If no more lines for this entry, delete the entry too
+    if (remainingLines[0].count === 0) {
+      await pool.query(
+        "DELETE FROM journalEntries WHERE id = ?",
+        [journalEntryId]
+      );
+    }
+  }
+  
+  res.sendStatus(204);
 });
 
 // ============== SERVER STARTUP ==============
