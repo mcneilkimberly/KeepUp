@@ -278,6 +278,9 @@ export default function Ledger() {
     // Currently selected account (null if none selected)
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
 
+    // Sort order for entries - tracks which filter/sort is currently applied
+    const [sortOrder, setSortOrder] = useState<"date-newest" | "date-oldest" | "amount-high" | "amount-low">("date-newest");
+
     // ============== EFFECTS ==============
 
     /**
@@ -302,29 +305,29 @@ export default function Ledger() {
     }, []);
 
     /**
-     * useEffect: Fetch entries when selected account changes
+     * useEffect: Fetch entries when selected account changes or sort order changes
      * 
-     * Runs whenever selectedAccount changes.
-     * Fetches all journal entries for the currently selected account.
+     * Runs whenever selectedAccount or sortOrder changes.
+     * Fetches all journal entries for the currently selected account with the specified sort order.
      * 
      * Steps:
      * 1. If no account is selected, return early (do nothing)
-     * 2. Calls GET /account/{accountId}/entries endpoint
+     * 2. Calls GET /account/{accountId}/entries?sort={sortOrder} endpoint
      * 3. Parses JSON response
      * 4. Updates entries state with the fetched data (stored under account ID key)
      * 5. Catches any errors and logs them
      * 
-     * Dependency: [selectedAccount]
+     * Dependency: [selectedAccount, sortOrder]
      */
     useEffect(() => {
         if (!selectedAccount) return;
-        fetch(API(`/account/${selectedAccount.id}/entries`))
+        fetch(API(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`))
             .then((r) => r.json())
             .then((data: Entry[]) =>
                 setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
             )
             .catch(console.error);
-    }, [selectedAccount]);
+    }, [selectedAccount, sortOrder]);
 
     // ============== FUNCTIONS ==============
 
@@ -635,12 +638,17 @@ export default function Ledger() {
 
                         {/* Control buttons and filter dropdown */}
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            {/* Filter dropdown - currently non-functional (placeholder) */}
-                            <select className="input" defaultValue="" style={{ width: 220 }}>
-                                <option value="" disabled>Filter…</option>
-                                <option>Date (newest)</option>
-                                <option>Date (oldest)</option>
-                                <option>Amount (high→low)</option>
+                            {/* Filter dropdown - sorts entries by date or amount */}
+                            <select 
+                                className="input" 
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value as "date-newest" | "date-oldest" | "amount-high" | "amount-low")}
+                                style={{ width: 220 }}
+                            >
+                                <option value="date-newest">Date (decending)</option>
+                                <option value="date-oldest">Date (ascending)</option>
+                                <option value="amount-high">Amount (decending)</option>
+                                <option value="amount-low">Amount (ascending)</option>
                             </select>
                             
                             {/* Add entry button - opens EntryModal, disabled if no account selected */}
@@ -682,7 +690,7 @@ export default function Ledger() {
                             {selectedAccount ? (
                                 // If account is selected, show its entries
                                 (entries[selectedAccount.id] || []).length ? (
-                                    // If account has entries, map and display each one
+                                    // If account has entries, display each one (already sorted from backend)
                                     (entries[selectedAccount.id] || []).map((e, idx) => (
                                         <tr key={idx}>
                                             <td>{e.date}</td>
