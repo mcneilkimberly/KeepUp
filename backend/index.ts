@@ -278,21 +278,28 @@ app.get("/entries", async (req: Request, res: Response) => {
 /**
  * GET /account/:id/entries
  * 
- * Fetches all journal entries (transactions) for a specific account.
+ * Fetches all journal entries (transactions) for a specific account with optional sorting.
  * 
  * URL params:
  * - id: account UUID to fetch entries for
+ * 
+ * Query params:
+ * - sort: (optional) sort order - "date-newest", "date-oldest", "amount-high", "amount-low"
  * 
  * Database structure:
  * - Queries journalLines filtered by account_id
  * - Joins with journalEntries to get transaction details
  * 
  * Steps:
- * 1. Extracts account id from URL
- * 2. Queries journalLines where account_id matches
- * 3. Joins with journalEntries to get date and description
- * 4. Orders by entry_date (oldest to newest)
- * 5. Returns the filtered entries with their line IDs for deletion
+ * 1. Extracts account id from URL and sort parameter from query string
+ * 2. Determines ORDER BY clause based on sort parameter:
+ *    - "date-newest": ORDER BY entry_date DESC
+ *    - "date-oldest": ORDER BY entry_date ASC (default)
+ *    - "amount-high": ORDER BY GREATEST(debit_amount, credit_amount) DESC
+ *    - "amount-low": ORDER BY GREATEST(debit_amount, credit_amount) ASC
+ * 3. Queries journalLines where account_id matches
+ * 4. Joins with journalEntries to get date and description
+ * 5. Returns the filtered and sorted entries
  * 
  * Returns: Array of entry objects for that specific account
  * 
@@ -304,6 +311,20 @@ app.get("/entries", async (req: Request, res: Response) => {
  */
 app.get("/account/:id/entries", async (req: Request, res: Response) => {
   const { id } = req.params;
+  const { sort } = req.query as { sort?: string };
+  
+  // Determine ORDER BY clause based on sort parameter
+  let orderByClause = "ORDER BY e.entry_date ASC"; // Default: oldest first
+  
+  if (sort === "date-newest") {
+    orderByClause = "ORDER BY e.entry_date DESC";
+  } else if (sort === "date-oldest") {
+    orderByClause = "ORDER BY e.entry_date ASC";
+  } else if (sort === "amount-high") {
+    orderByClause = "ORDER BY GREATEST(l.debit_amount, l.credit_amount) DESC";
+  } else if (sort === "amount-low") {
+    orderByClause = "ORDER BY GREATEST(l.debit_amount, l.credit_amount) ASC";
+  }
   
   // Fetch entries utilizing the new relationship (journalEntries -> journalLines -> account)
   // Include the journalLines id so we can delete individual entries
@@ -312,7 +333,7 @@ app.get("/account/:id/entries", async (req: Request, res: Response) => {
      FROM journalLines l
      JOIN journalEntries e ON l.journal_entry_id = e.id
      WHERE l.account_id = ? 
-     ORDER BY e.entry_date`,
+     ${orderByClause}`,
     [id]
   );
   res.json(rows);
