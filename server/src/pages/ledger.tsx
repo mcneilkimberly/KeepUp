@@ -463,6 +463,7 @@ export default function Ledger() {
      * Dependency: [selectedAccount]
      */
     useEffect(() => {
+        // eslint-disable-next-line
         setSelectedEntryIndex(null);
     }, [selectedAccount]);
 
@@ -570,7 +571,7 @@ export default function Ledger() {
      * Steps:
      * 1. Guards against no selected account (returns early if none)
      * 2. Makes POST request to /account/{accountId}/entries with entry data
-     * 3. Adds the new entry to the entries state under the selected account ID
+     * 3. Refetches entries list in the current sort order
      * 4. Catches any errors (no explicit error handling shown)
      * 
      * Called by: EntryModal's onSave (when user clicks Save in "Add entry" dialog)
@@ -582,15 +583,14 @@ export default function Ledger() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(entry),
         }).then(() => {
-            // Add the entry to the entries Record
-            setEntries((prev) => {
-                const accountEntries = prev[selectedAccount.id] || [];
-                return {
-                    ...prev,
-                    [selectedAccount.id]: [...accountEntries, entry],
-                };
-            });
-        });
+            // Refetch entries to get them in the correct sort order
+            fetch(API(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`))
+                .then((r) => r.json())
+                .then((data: Entry[]) =>
+                    setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
+                )
+                .catch(console.error);
+        }).catch(console.error);
     }
 
     /**
