@@ -460,6 +460,7 @@ export default function Ledger() {
      * Dependency: [selectedAccount]
      */
     useEffect(() => {
+        // eslint-disable-next-line
         setSelectedEntryIndex(null);
     }, [selectedAccount]);
 
