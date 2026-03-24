@@ -73,7 +73,7 @@ export default function App() {
             <div className="footerSections">
             <div className="footerCol">
                 <div className="footerHeading">Pages</div>
-                <Link className="footerLink" to="/">Home</Link>
+                <Link className="footerLink" to="/">Dashboard</Link>
                 <Link className="footerLink" to="/journal">Journal</Link>
                 <Link className="footerLink" to="/ledger">Ledger</Link>
                 <Link className="footerLink" to="/statements">Statements</Link>
