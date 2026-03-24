@@ -1,6 +1,76 @@
 import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+
+interface DashboardData {
+    totalIncome: number;
+    totalSpending: number;
+    accountCount: number;
+    recentEntries: Array<{
+        date: string;
+        description: string;
+        account: string;
+        debit: number;
+        credit: number;
+    }>;
+}
 
 export default function Home() {
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch("http://localhost:3001/dashboard/summary");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch dashboard data");
+                }
+                const data = await response.json();
+                setDashboardData(data);
+                setError(null);
+            } catch (err) {
+                console.error("Error fetching dashboard:", err);
+                setError(err instanceof Error ? err.message : "Unknown error");
+                setDashboardData(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2
+        }).format(value);
+    };
+
+    const formatLargeCurrency = (value: number) => {
+        if (value === 0) return "$0.00";
+        
+        const absValue = Math.abs(value);
+        const sign = value < 0 ? "-" : "";
+        
+        if (absValue >= 1_000_000_000) {
+            return sign + "$" + (absValue / 1_000_000_000).toFixed(1) + "B";
+        } else if (absValue >= 1_000_000) {
+            return sign + "$" + (absValue / 1_000_000).toFixed(1) + "M";
+        } else if (absValue >= 1_000) {
+            return sign + "$" + (absValue / 1_000).toFixed(1) + "K";
+        } else {
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                minimumFractionDigits: 2
+            }).format(value);
+        }
+    };
+
     return (
         <div>
         <h1 className="pageTitle">Home</h1>
@@ -47,15 +117,15 @@ export default function Home() {
                 <div className="kpis">
                     <div className="kpi">
                     <div className="kpiLabel">Accounts</div>
-                    <div className="kpiValue">—</div>
+                    <div className="kpiValue">{loading ? "—" : dashboardData?.accountCount || 0}</div>
                     </div>
                     <div className="kpi">
-                    <div className="kpiLabel">Entries (monthly)</div>
-                    <div className="kpiValue">—</div>
+                    <div className="kpiLabel">Total Debit</div>
+                    <div className="kpiValue">{loading ? "—" : formatLargeCurrency(dashboardData?.totalIncome || 0)}</div>
                     </div>
                     <div className="kpi">
-                    <div className="kpiLabel">Last updated</div>
-                    <div className="kpiValue">—</div>
+                    <div className="kpiLabel">Total Credit</div>
+                    <div className="kpiValue">{loading ? "—" : formatLargeCurrency(dashboardData?.totalSpending || 0)}</div>
                     </div>
                 </div>
             </div>
@@ -63,7 +133,7 @@ export default function Home() {
             <div className="card" style={{ gridColumn: "span 12" }}>
             <div className="row" style={{ marginBottom: 10 }}>
                 <h2 className="cardTitle" style={{ margin: 0 }}>Recent activity</h2>
-                <span className="pill">~Placeholder list~</span>
+                <span className="pill">{loading ? "Loading..." : `${dashboardData?.recentEntries.length || 0} entries`}</span>
             </div>
 
             <table className="table">
@@ -77,13 +147,33 @@ export default function Home() {
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td className="muted">—</td>
-                    <td className="muted">No entries yet</td>
-                    <td className="muted">—</td>
-                    <td className="muted">—</td>
-                    <td className="muted">—</td>
-                </tr>
+                {error ? (
+                    <tr>
+                        <td colSpan={5} className="muted">Error loading entries: {error}</td>
+                    </tr>
+                ) : loading ? (
+                    <tr>
+                        <td colSpan={5} className="muted">Loading entries...</td>
+                    </tr>
+                ) : dashboardData?.recentEntries && dashboardData.recentEntries.length > 0 ? (
+                    dashboardData.recentEntries.map((entry, idx) => (
+                        <tr key={idx}>
+                            <td>{entry.date}</td>
+                            <td>{entry.description}</td>
+                            <td>{entry.account}</td>
+                            <td>{entry.debit > 0 ? formatCurrency(entry.debit) : "—"}</td>
+                            <td>{entry.credit > 0 ? formatCurrency(entry.credit) : "—"}</td>
+                        </tr>
+                    ))
+                ) : (
+                    <tr>
+                        <td className="muted">—</td>
+                        <td className="muted">No entries yet</td>
+                        <td className="muted">—</td>
+                        <td className="muted">—</td>
+                        <td className="muted">—</td>
+                    </tr>
+                )}
                 </tbody>
             </table>
             </div>
