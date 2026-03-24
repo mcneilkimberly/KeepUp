@@ -424,12 +424,15 @@ app.post("/account/:id/entries", async (req: Request, res: Response) => {
  */
 app.get("/dashboard/summary", async (req: Request, res: Response) => {
   try {
+    console.log("Dashboard summary endpoint called");
+    
     // Get total debits across all entries
     const [debitResult]: any = await pool.query(
       `SELECT COALESCE(SUM(l.debit_amount), 0) as total_debit
        FROM journalLines l
        JOIN journalEntries e ON l.journal_entry_id = e.id`
     );
+    console.log("Debit result:", debitResult);
 
     // Get total credits across all entries
     const [creditResult]: any = await pool.query(
@@ -437,11 +440,13 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
        FROM journalLines l
        JOIN journalEntries e ON l.journal_entry_id = e.id`
     );
+    console.log("Credit result:", creditResult);
 
     // Get account count
     const [accountCount]: any = await pool.query(
       `SELECT COUNT(*) as count FROM account`
     );
+    console.log("Account count result:", accountCount);
 
     // Get recent entries (last 5)
     const [recentEntries]: any = await pool.query(
@@ -452,13 +457,16 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
        ORDER BY e.entry_date DESC
        LIMIT 5`
     );
+    console.log("Recent entries:", recentEntries);
 
-    res.json({
+    const response = {
       totalIncome: parseFloat(debitResult[0].total_debit),
       totalSpending: parseFloat(creditResult[0].total_credit),
       accountCount: accountCount[0].count,
       recentEntries: recentEntries
-    });
+    };
+    console.log("Sending response:", response);
+    res.json(response);
   } catch (error) {
     console.error("Error fetching dashboard summary:", error);
     res.status(500).json({ error: "Failed to fetch dashboard summary" });
