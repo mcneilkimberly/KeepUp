@@ -73,7 +73,7 @@ export default function Dashboard() {
 
     return (
         <div>
-        <h1 className="pageTitle">Home</h1>
+        <h1 className="pageTitle">Dashboard</h1>
         <p className="muted" style={{ maxWidth: 720, marginTop: 12 }}>
             Welcome to <a href="/" className="link"><strong>KeepUp</strong></a>, a lightweight bookkeeping software. [more info?]
         </p>

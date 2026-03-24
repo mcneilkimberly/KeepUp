@@ -29,7 +29,7 @@ export default function App() {
             </Link>
 
             <nav className="nav" aria-label="Primary navigation">
-                <NavItem to="/" label="Home" />
+                <NavItem to="/" label="Dashboard" />
                 <NavItem to="/journal" label="Journal" />
                 <NavItem to="/ledger" label="Ledger" />
                 <NavItem to="/statements" label="Statements" />
