@@ -1,5 +1,5 @@
 import { NavLink, Route, Routes, Link } from "react-router-dom";
-import Home from "./pages/home";
+import Dashboard from "./pages/dashboard";
 import Journal from "./pages/journal";
 import Ledger from "./pages/ledger";
 import Statements from "./pages/statements";
@@ -40,7 +40,7 @@ export default function App() {
       <main className="appMain">
         <div className="appContainer">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/statements" element={<Statements />} />
