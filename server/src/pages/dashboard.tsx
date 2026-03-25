@@ -1,6 +1,25 @@
 import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+/**
+ * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
+ * @param dateString Date in "YYYY-MM-DD" format
+ * @returns Formatted date string (e.g., "March 19, 2026")
+ */
+const formatDate = (dateString: string): string => {
+    if (!dateString) return "";
+    // Parse YYYY-MM-DD format safely without timezone issues
+    const [year, month, day] = dateString.split("-");
+    if (!year || !month || !day) return dateString; // Fallback if format is unexpected
+    
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+};
+
 interface DashboardData {
     totalIncome: number;
     totalSpending: number;
@@ -158,7 +177,7 @@ export default function Dashboard() {
                 ) : dashboardData?.recentEntries && dashboardData.recentEntries.length > 0 ? (
                     dashboardData.recentEntries.map((entry, idx) => (
                         <tr key={idx}>
-                            <td>{entry.date}</td>
+                            <td>{formatDate(entry.date)}</td>
                             <td>{entry.description}</td>
                             <td>{entry.account}</td>
                             <td>{entry.debit > 0 ? formatCurrency(entry.debit) : "—"}</td>
