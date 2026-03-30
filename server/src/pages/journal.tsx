@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Papa from "papaparse";
 
 // API helper function that constructs full API URLs
 // Takes a path like "/entries" and returns "http://localhost:3001/entries"
@@ -28,6 +29,7 @@ interface Entry {
     description: string;
     debit: string;
     credit: string;
+    accountName?: string;
 }
 
 export default function Journal() {
@@ -134,6 +136,133 @@ export default function Journal() {
         setCredit("");
     }
 
+
+    // cleanCsvData is a function that takes raw CSV data
+// and transforms it into an array of Entry objects that can be added to the ledger.
+function cleanCsvData(rows: string[][]): Entry[] {
+    let currentDate = "";
+    const cleanEntries: Entry[] = [];
+
+    // .slice(4) automatically skips the first 4 rows!
+    for (const [date, account, debit, credit] of rows.slice(4)) {
+        if (!date && !account) continue;
+
+        // If 'date' exists, use it. Otherwise, use the old 'currentDate'
+        currentDate = date?.trim() || currentDate;
+
+        if (account?.trim()) {
+            cleanEntries.push({
+                date: currentDate,
+                accountName: account.trim(),
+                description: "CSV Import",
+                debit: (debit || "0.00").replace(/[,"]/g, ''),
+                credit: (credit || "0.00").replace(/[,"]/g, ''),
+            });
+        }
+    }
+    return cleanEntries;
+} 
+
+//** createMissingAccounts is a functions that 
+// creates any accounts that are in the CSV that do not exist already
+// */ 
+async function createMissingAccounts(csvEntries: Entry[], currentAccounts: Account[]){
+    const updatedAccounts = [...currentAccounts];
+
+    //Get every unique account name form the CSV
+    const allNames = csvEntries.map(entry=> entry.accountName || "");
+    const uniqueNames = Array.from(new Set(allNames));
+
+    //Check the database ones against the CSV ones
+    for (const name of uniqueNames){
+        if (!name) continue;
+
+        const exists = updatedAccounts.find(a => a.name.toLowerCase() === name.toLowerCase());
+
+        //If it doesn't exist, create it!
+        if (!exists) {
+            try{
+                const response = await fetch (API("/account"),{
+                    method: "POST",
+                    headers: { "Content-Type": "application/json"},
+                    body: JSON.stringify({ name }),
+                });
+                const newAccount = await response.json();
+                updatedAccounts.push(newAccount);
+            } catch (error) {
+                console.error("Error creating account:", error);
+            }
+        }
+    }
+
+    return updatedAccounts;
+}
+
+//** sortEntriesIntoFolders is a function that
+// sorts CSV entries into folders based on their account IDs
+// */ 
+function sortEntriesIntoFolders( csvEntries:Entry[], currentFolders:Record<string,Entry[]>, allAccounts: Account[]){
+    const updatedFolders ={ ...currentFolders };
+
+    for (const row of csvEntries){
+        const matchedAccount = allAccounts.find(
+            a => a.name.toLowerCase() === row.accountName?.toLowerCase()
+        );
+        const accountId = matchedAccount ? matchedAccount.id : "Unknown";
+
+        if (!updatedFolders[accountId]){
+            updatedFolders[accountId] = [];
+        }
+        updatedFolders[accountId].push(row);
+    }
+    return updatedFolders;
+}
+
+
+
+    function importCSV(e: React.ChangeEvent<HTMLInputElement>){
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        Papa.parse(file, {
+            header: false,
+            skipEmptyLines: true,
+            complete: async function(result: any){
+                const cleanEntries = cleanCsvData(result.data as string[][]);
+                const updatedAccounts = await createMissingAccounts(cleanEntries, accounts);
+                setAccounts(updatedAccounts);
+
+                // POST each parsed entry to the backend database
+                for (const row of cleanEntries){
+                    const matchedAccount = updatedAccounts.find(
+                        a => a.name.toLowerCase() === row.accountName?.toLowerCase()
+                    );
+                    const accountId = matchedAccount ? matchedAccount.id : null;
+                    if (accountId){
+                        try {
+                            await fetch(API(`/account/${accountId}/entries`),{
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    date: row.date,
+                                    description: row.description,
+                                    debit: row.debit,
+                                    credit: row.credit
+                                }),
+                            });
+                        }catch (err){
+                            console.error("Failed to add CSV entry to DB:", err);
+                        }
+                    }
+                }
+
+                // Fetch the updated list of entries from the backend 
+                fetchRecentEntries();
+            }
+        });
+        e.target.value = ""
+    }
+
     // ============== RENDER ==============
     return (
         <div>
@@ -191,6 +320,19 @@ export default function Journal() {
                         <button className="btn btnPrimary" type="button" onClick={handleAddEntry} disabled={!date || !description || !accountId}>
                             Add entry
                         </button>
+
+                        <label
+                                className="btn"
+                                style={{ cursor: "pointer", textAlign: "center" }}
+                            >
+                                Import CSV
+                                <input
+                                    type="file"
+                                    accept=".csv"
+                                    style={{ display: "none" }}
+                                    onChange={importCSV}
+                                />
+                            </label>
                     </div>
                 </div>
 
