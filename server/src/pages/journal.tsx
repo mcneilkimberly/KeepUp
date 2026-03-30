@@ -358,38 +358,40 @@ async function createMissingAccounts(csvEntries: Entry[], currentAccounts: Accou
                         <span className="pill">{entries.length ? `${entries.length} entries` : "No data yet"}</span>
                     </div>
 
-                    {/* Table displaying all recent entries from the 'entries' state */}
-                    <table className="table">
-                        <thead>
-                            <tr>
-                                <th style={{ width: 140 }}>Date</th>
-                                <th>Description</th>
-                                <th style={{ width: 120 }}>Debit</th>
-                                <th style={{ width: 120 }}>Credit</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {/* If entries exist, render each one as a table row */}
-                            {entries.length ? (
-                                entries.map((entry, idx) => (
-                                    <tr key={idx}>
-                                        <td>{entry.date}</td>
-                                        <td>{entry.description}</td>
-                                        <td>{entry.debit}</td>
-                                        <td>{entry.credit}</td>
-                                    </tr>
-                                ))
-                            ) : (
-                                /* If no entries exist, show a placeholder row */
+                    <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+                        {/* Table displaying all recent entries from the 'entries' state */}
+                        <table className="table">
+                            <thead  style={{ position: "sticky", top: 0, backgroundColor: "var(--bg-card, #1e1e1e)", zIndex: 1 }}>
                                 <tr>
-                                    <td className="muted">—</td>
-                                    <td className="muted">No entries recorded</td>
-                                    <td className="muted">—</td>
-                                    <td className="muted">—</td>
+                                    <th style={{ width: 140 }}>Date</th>
+                                    <th>Description</th>
+                                    <th style={{ width: 120 }}>Debit</th>
+                                    <th style={{ width: 120 }}>Credit</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {/* If entries exist, render each one as a table row */}
+                                {entries.length ? (
+                                    entries.map((entry, idx) => (
+                                        <tr key={idx}>
+                                            <td>{entry.date}</td>
+                                            <td>{entry.description}</td>
+                                            <td>{entry.debit}</td>
+                                            <td>{entry.credit}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    /* If no entries exist, show a placeholder row */
+                                    <tr>
+                                        <td className="muted">—</td>
+                                        <td className="muted">No entries recorded</td>
+                                        <td className="muted">—</td>
+                                        <td className="muted">—</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
