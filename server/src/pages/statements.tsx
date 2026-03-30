@@ -258,12 +258,12 @@ export default function Statements() {
                         {assets.map((ab) => (
                             <tr key={ab.account.id}>
                                 <td style={{ paddingLeft: 24 }}>{ab.account.name}</td>
-                                <td style={{ textAlign: "right" }}>${ab.balance.toFixed(2)}</td>
+                                <td style={{ textAlign: "right" }}>${Math.abs(ab.balance).toFixed(2)}</td>
                             </tr>
                         ))}
                         <tr style={{ fontWeight: "bold", borderBottom: "2px solid rgba(255,255,255,0.2)" }}>
                             <td>Total Assets</td>
-                            <td style={{ textAlign: "right" }}>${totalAssets.toFixed(2)}</td>
+                            <td style={{ textAlign: "right" }}>${Math.abs(totalAssets).toFixed(2)}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -281,22 +281,22 @@ export default function Statements() {
                         {liabilities.map((ab) => (
                             <tr key={ab.account.id}>
                                 <td style={{ paddingLeft: 24 }}>{ab.account.name}</td>
-                                <td style={{ textAlign: "right" }}>${ab.balance.toFixed(2)}</td>
+                                <td style={{ textAlign: "right" }}>${Math.abs(ab.balance).toFixed(2)}</td>
                             </tr>
                         ))}
                         <tr style={{ fontWeight: "bold" }}>
                             <td>Total Liabilities</td>
-                            <td style={{ textAlign: "right" }}>${totalLiabilities.toFixed(2)}</td>
+                            <td style={{ textAlign: "right" }}>${Math.abs(totalLiabilities).toFixed(2)}</td>
                         </tr>
                         {equity.map((ab) => (
                             <tr key={ab.account.id}>
                                 <td style={{ paddingLeft: 24 }}>{ab.account.name}</td>
-                                <td style={{ textAlign: "right" }}>${ab.balance.toFixed(2)}</td>
+                                <td style={{ textAlign: "right" }}>${Math.abs(ab.balance).toFixed(2)}</td>
                             </tr>
                         ))}
                         <tr style={{ fontWeight: "bold", borderBottom: "2px solid rgba(255,255,255,0.2)" }}>
                             <td>Total Liabilities &amp; Equity</td>
-                            <td style={{ textAlign: "right" }}>${(totalLiabilities + totalEquity).toFixed(2)}</td>
+                            <td style={{ textAlign: "right" }}>${Math.abs(totalLiabilities + totalEquity).toFixed(2)}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -329,12 +329,12 @@ export default function Statements() {
                 <tbody>
                     <tr style={{ fontWeight: "bold" }}>
                         <td>Revenue</td>
-                        <td style={{ textAlign: "right" }}>${totalRevenue.toFixed(2)}</td>
+                        <td style={{ textAlign: "right" }}>${Math.abs(totalRevenue).toFixed(2)}</td>
                     </tr>
                     {revenues.map((ab) => (
                         <tr key={ab.account.id}>
                             <td style={{ paddingLeft: 24 }}>{ab.account.name}</td>
-                            <td style={{ textAlign: "right" }}>${ab.balance.toFixed(2)}</td>
+                            <td style={{ textAlign: "right" }}>${Math.abs(ab.balance).toFixed(2)}</td>
                         </tr>
                     ))}
                     <tr style={{ height: 8 }}></tr>
@@ -345,17 +345,17 @@ export default function Statements() {
                     {expenses.map((ab) => (
                         <tr key={ab.account.id}>
                             <td style={{ paddingLeft: 24 }}>{ab.account.name}</td>
-                            <td style={{ textAlign: "right" }}>({ab.balance.toFixed(2)})</td>
+                            <td style={{ textAlign: "right" }}>${Math.abs(ab.balance).toFixed(2)}</td>
                         </tr>
                     ))}
                     <tr style={{ fontWeight: "bold" }}>
                         <td>Total Expenses</td>
-                        <td style={{ textAlign: "right" }}>({totalExpenses.toFixed(2)})</td>
+                        <td style={{ textAlign: "right" }}>${Math.abs(totalExpenses).toFixed(2)}</td>
                     </tr>
                     <tr style={{ fontWeight: "bold", borderBottom: "2px solid rgba(255,255,255,0.2)" }}>
                         <td>Net Income</td>
                         <td style={{ textAlign: "right", color: netIncome >= 0 ? "#4ade80" : "#f87171" }}>
-                            ${netIncome.toFixed(2)}
+                            ${Math.abs(netIncome).toFixed(2)}
                         </td>
                     </tr>
                 </tbody>
@@ -390,13 +390,13 @@ export default function Statements() {
                     {assets.map((ab) => (
                         <tr key={ab.account.id}>
                             <td style={{ paddingLeft: 24 }}>{ab.account.name}</td>
-                            <td style={{ textAlign: "right" }}>${ab.balance.toFixed(2)}</td>
+                            <td style={{ textAlign: "right" }}>${Math.abs(ab.balance).toFixed(2)}</td>
                         </tr>
                     ))}
                     <tr style={{ fontWeight: "bold", borderBottom: "2px solid rgba(255,255,255,0.2)" }}>
                         <td>Net Change in Cash</td>
                         <td style={{ textAlign: "right", color: "#4ade80" }}>
-                            ${assets.reduce((sum, ab) => sum + ab.balance, 0).toFixed(2)}
+                            ${Math.abs(assets.reduce((sum, ab) => sum + ab.balance, 0)).toFixed(2)}
                         </td>
                     </tr>
                 </tbody>
@@ -440,20 +440,20 @@ export default function Statements() {
                             <td>{ab.account.name}</td>
                             <td style={{ textAlign: "right" }}>
                                 {(ab.account.type === "asset" || ab.account.type === "expense") && ab.balance > 0
-                                    ? `$${ab.balance.toFixed(2)}`
+                                    ? `$${Math.abs(ab.balance).toFixed(2)}`
                                     : "—"}
                             </td>
                             <td style={{ textAlign: "right" }}>
                                 {(ab.account.type === "liability" || ab.account.type === "equity" || ab.account.type === "revenue") && ab.balance > 0
-                                    ? `$${ab.balance.toFixed(2)}`
+                                    ? `$${Math.abs(ab.balance).toFixed(2)}`
                                     : "—"}
                             </td>
                         </tr>
                     ))}
                     <tr style={{ fontWeight: "bold", borderTop: "2px solid rgba(255,255,255,0.2)", borderBottom: "2px solid rgba(255,255,255,0.2)" }}>
                         <td>Totals</td>
-                        <td style={{ textAlign: "right" }}>${totalDebits.toFixed(2)}</td>
-                        <td style={{ textAlign: "right" }}>${totalCredits.toFixed(2)}</td>
+                        <td style={{ textAlign: "right" }}>${Math.abs(totalDebits).toFixed(2)}</td>
+                        <td style={{ textAlign: "right" }}>${Math.abs(totalCredits).toFixed(2)}</td>
                     </tr>
                 </tbody>
             </table>

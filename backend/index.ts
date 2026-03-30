@@ -278,21 +278,28 @@ app.get("/entries", async (req: Request, res: Response) => {
 /**
  * GET /account/:id/entries
  * 
- * Fetches all journal entries (transactions) for a specific account.
+ * Fetches all journal entries (transactions) for a specific account with optional sorting.
  * 
  * URL params:
  * - id: account UUID to fetch entries for
+ * 
+ * Query params:
+ * - sort: (optional) sort order - "date-newest", "date-oldest", "amount-high", "amount-low"
  * 
  * Database structure:
  * - Queries journalLines filtered by account_id
  * - Joins with journalEntries to get transaction details
  * 
  * Steps:
- * 1. Extracts account id from URL
- * 2. Queries journalLines where account_id matches
- * 3. Joins with journalEntries to get date and description
- * 4. Orders by entry_date (oldest to newest)
- * 5. Returns the filtered entries with their line IDs for deletion
+ * 1. Extracts account id from URL and sort parameter from query string
+ * 2. Determines ORDER BY clause based on sort parameter:
+ *    - "date-newest": ORDER BY entry_date DESC
+ *    - "date-oldest": ORDER BY entry_date ASC (default)
+ *    - "amount-high": ORDER BY GREATEST(debit_amount, credit_amount) DESC
+ *    - "amount-low": ORDER BY GREATEST(debit_amount, credit_amount) ASC
+ * 3. Queries journalLines where account_id matches
+ * 4. Joins with journalEntries to get date and description
+ * 5. Returns the filtered and sorted entries
  * 
  * Returns: Array of entry objects for that specific account
  * 
@@ -304,6 +311,20 @@ app.get("/entries", async (req: Request, res: Response) => {
  */
 app.get("/account/:id/entries", async (req: Request, res: Response) => {
   const { id } = req.params;
+  const { sort } = req.query as { sort?: string };
+  
+  // Determine ORDER BY clause based on sort parameter
+  let orderByClause = "ORDER BY e.entry_date ASC"; // Default: oldest first
+  
+  if (sort === "date-newest") {
+    orderByClause = "ORDER BY e.entry_date DESC";
+  } else if (sort === "date-oldest") {
+    orderByClause = "ORDER BY e.entry_date ASC";
+  } else if (sort === "amount-high") {
+    orderByClause = "ORDER BY GREATEST(l.debit_amount, l.credit_amount) DESC";
+  } else if (sort === "amount-low") {
+    orderByClause = "ORDER BY GREATEST(l.debit_amount, l.credit_amount) ASC";
+  }
   
   // Fetch entries utilizing the new relationship (journalEntries -> journalLines -> account)
   // Include the journalLines id so we can delete individual entries
@@ -312,7 +333,7 @@ app.get("/account/:id/entries", async (req: Request, res: Response) => {
      FROM journalLines l
      JOIN journalEntries e ON l.journal_entry_id = e.id
      WHERE l.account_id = ? 
-     ORDER BY e.entry_date`,
+     ${orderByClause}`,
     [id]
   );
   res.json(rows);
@@ -388,58 +409,68 @@ app.post("/account/:id/entries", async (req: Request, res: Response) => {
   res.sendStatus(201);
 });
 
+/* -------- DASHBOARD -------- */
+
 /**
- * DELETE /account/:id/entries/:entryId
+ * GET /dashboard/summary
  * 
- * Deletes a specific journal entry (line) for an account.
+ * Returns dashboard summary statistics:
+ * - Total debit (sum of all debits across all entries)
+ * - Total credit (sum of all credits across all entries)
+ * - Total account count
+ * - Recent entries (last 5)
  * 
- * URL params:
- * - id: account UUID that owns the entry
- * - entryId: journalLines ID to delete
- * 
- * Steps:
- * 1. Extracts account id and entry id from URL
- * 2. Deletes the journal line from the database
- * 3. Optionally cleans up orphaned journal entries (entries with no lines)
- * 4. Returns 204 No Content on success
- * 
- * Note: The journalEntry itself is left in the database even if it has no lines.
- * This preserves historical records. If you want to clean up orphaned entries,
- * you can enable the cleanup query below.
+ * Returns: Object with summary stats and recent entries
  */
-app.delete("/account/:id/entries/:entryId", async (req: Request, res: Response) => {
-  const { id, entryId } = req.params;
-  
-  // Get the journal_entry_id before deleting the line
-  const [lines]: any = await pool.query(
-    "SELECT journal_entry_id FROM journalLines WHERE id = ? AND account_id = ?",
-    [entryId, id]
-  );
-  
-  // Delete the journal line
-  await pool.query(
-    "DELETE FROM journalLines WHERE id = ? AND account_id = ?",
-    [entryId, id]
-  );
-  
-  // Optional: Clean up orphaned journal entries (entries with no lines)
-  if (lines.length > 0) {
-    const journalEntryId = lines[0].journal_entry_id;
-    const [remainingLines]: any = await pool.query(
-      "SELECT COUNT(*) as count FROM journalLines WHERE journal_entry_id = ?",
-      [journalEntryId]
-    );
+app.get("/dashboard/summary", async (req: Request, res: Response) => {
+  try {
+    console.log("Dashboard summary endpoint called");
     
-    // If no more lines for this entry, delete the entry too
-    if (remainingLines[0].count === 0) {
-      await pool.query(
-        "DELETE FROM journalEntries WHERE id = ?",
-        [journalEntryId]
-      );
-    }
+    // Get total debits across all entries
+    const [debitResult]: any = await pool.query(
+      `SELECT COALESCE(SUM(l.debit_amount), 0) as total_debit
+       FROM journalLines l
+       JOIN journalEntries e ON l.journal_entry_id = e.id`
+    );
+    console.log("Debit result:", debitResult);
+
+    // Get total credits across all entries
+    const [creditResult]: any = await pool.query(
+      `SELECT COALESCE(SUM(l.credit_amount), 0) as total_credit
+       FROM journalLines l
+       JOIN journalEntries e ON l.journal_entry_id = e.id`
+    );
+    console.log("Credit result:", creditResult);
+
+    // Get account count
+    const [accountCount]: any = await pool.query(
+      `SELECT COUNT(*) as count FROM account`
+    );
+    console.log("Account count result:", accountCount);
+
+    // Get recent entries (last 5)
+    const [recentEntries]: any = await pool.query(
+      `SELECT e.entry_date as date, e.description, a.name as account, l.debit_amount as debit, l.credit_amount as credit
+       FROM journalLines l
+       JOIN journalEntries e ON l.journal_entry_id = e.id
+       JOIN account a ON l.account_id = a.id
+       ORDER BY e.entry_date DESC
+       LIMIT 5`
+    );
+    console.log("Recent entries:", recentEntries);
+
+    const response = {
+      totalIncome: parseFloat(debitResult[0].total_debit),
+      totalSpending: parseFloat(creditResult[0].total_credit),
+      accountCount: accountCount[0].count,
+      recentEntries: recentEntries
+    };
+    console.log("Sending response:", response);
+    res.json(response);
+  } catch (error) {
+    console.error("Error fetching dashboard summary:", error);
+    res.status(500).json({ error: "Failed to fetch dashboard summary" });
   }
-  
-  res.sendStatus(204);
 });
 
 // ============== SERVER STARTUP ==============

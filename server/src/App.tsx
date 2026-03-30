@@ -1,10 +1,11 @@
 import { NavLink, Route, Routes, Link } from "react-router-dom";
-import Home from "./pages/home";
+import Dashboard from "./pages/dashboard";
 import Journal from "./pages/journal";
 import Ledger from "./pages/ledger";
 import Statements from "./pages/statements";
 import Help from "./pages/help";
 import "./App.css";
+import ThemeToggle from "./ThemeToggle";
 
 import keepUpLogo from "/keepup-logo.svg";
 
@@ -22,25 +23,29 @@ function NavItem({ to, label }: { to: string; label: string }) {
 export default function App() {
   return (
     <div className="appShell">
-      <header className="appHeader">
+        <header className="appHeader">
             <Link to="/" className="appTitleLink" aria-label="Go to KeepUp home">
                 <img className="brandLogo" src={keepUpLogo} alt="" aria-hidden="true" />
                 <span className="brand">KeepUp</span>
             </Link>
 
-            <nav className="nav" aria-label="Primary navigation">
+            <div className="headerRight">
+                <nav className="nav" aria-label="Primary navigation">
                 <NavItem to="/" label="Home" />
                 <NavItem to="/journal" label="Journal" />
                 <NavItem to="/ledger" label="Ledger" />
                 <NavItem to="/statements" label="Statements" />
                 <NavItem to="/help" label="Help" />
-            </nav>
-      </header>
+                </nav>
+
+                <ThemeToggle />
+            </div>
+        </header>
 
       <main className="appMain">
         <div className="appContainer">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/statements" element={<Statements />} />
@@ -73,7 +78,7 @@ export default function App() {
             <div className="footerSections">
             <div className="footerCol">
                 <div className="footerHeading">Pages</div>
-                <Link className="footerLink" to="/">Home</Link>
+                <Link className="footerLink" to="/">Dashboard</Link>
                 <Link className="footerLink" to="/journal">Journal</Link>
                 <Link className="footerLink" to="/ledger">Ledger</Link>
                 <Link className="footerLink" to="/statements">Statements</Link>
@@ -82,14 +87,7 @@ export default function App() {
 
             <div className="footerCol">
                 <div className="footerHeading">Project</div>
-                <a
-                className="footerLink"
-                href="https://github.com/mcneilkimberly/KeepUp"
-                target="_blank"
-                rel="noopener noreferrer"
-                >
-                Repo
-                </a>
+                <a className="footerLink" href="https://github.com/mcneilkimberly/KeepUp" target="_blank" rel="noopener noreferrer"> Repo </a>
                 <a className="footerLink" href="https://ih1.redbubble.net/image.446409693.5124/st,small,507x507-pad,600x600,f8f8f8.u1.jpg" target="_blank" rel="noopener noreferrer">
                 Docs (idk)
                 </a>
