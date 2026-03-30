@@ -241,7 +241,7 @@ async function createMissingAccounts(csvEntries: Entry[], currentAccounts: Accou
         Papa.parse(file, {
             header: false,
             skipEmptyLines: true,
-            complete: async function(result: any){
+            complete: async function(result: Papa.ParseResult<string[]>){
                 const cleanEntries = cleanCsvData(result.data as string[][]);
                 const updatedAccounts = await createMissingAccounts(cleanEntries, accounts);
                 setAccounts(updatedAccounts);
