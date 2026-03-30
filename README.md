@@ -61,9 +61,11 @@ Head to: [http://localhost:5173](http://localhost:5173)
 5. **Navigate to /backend**
 - npm install            # pulls in typescript, ts-node(-dev), @types/…
 - npm install uuid       # pulls in universally unique identifier 
-- npm install -D@types/uuid       
+- npm install -D @types/uuid       
 - npm install cors       # pulls in Cross-Origin Resource Sharing (CORS) in the Express/Connect applications
-- npm install -D @types/       
+- npm install -D @types/  
+- npm install papaparse
+- npm install -D @types/papaparse    #pulls in so the csv's can be parsed
 
 - npm run dev           # run compiled output
 
