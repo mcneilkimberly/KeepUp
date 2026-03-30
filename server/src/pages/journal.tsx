@@ -201,22 +201,22 @@ async function createMissingAccounts(csvEntries: Entry[], currentAccounts: Accou
 //** sortEntriesIntoFolders is a function that
 // sorts CSV entries into folders based on their account IDs
 // */ 
-function sortEntriesIntoFolders( csvEntries:Entry[], currentFolders:Record<string,Entry[]>, allAccounts: Account[]){
-    const updatedFolders ={ ...currentFolders };
+// function sortEntriesIntoFolders( csvEntries:Entry[], currentFolders:Record<string,Entry[]>, allAccounts: Account[]){
+//     const updatedFolders ={ ...currentFolders };
 
-    for (const row of csvEntries){
-        const matchedAccount = allAccounts.find(
-            a => a.name.toLowerCase() === row.accountName?.toLowerCase()
-        );
-        const accountId = matchedAccount ? matchedAccount.id : "Unknown";
+//     for (const row of csvEntries){
+//         const matchedAccount = allAccounts.find(
+//             a => a.name.toLowerCase() === row.accountName?.toLowerCase()
+//         );
+//         const accountId = matchedAccount ? matchedAccount.id : "Unknown";
 
-        if (!updatedFolders[accountId]){
-            updatedFolders[accountId] = [];
-        }
-        updatedFolders[accountId].push(row);
-    }
-    return updatedFolders;
-}
+//         if (!updatedFolders[accountId]){
+//             updatedFolders[accountId] = [];
+//         }
+//         updatedFolders[accountId].push(row);
+//     }
+//     return updatedFolders;
+// }
 
 
 

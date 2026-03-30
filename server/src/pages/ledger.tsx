@@ -740,7 +740,8 @@ export default function Ledger() {
 
                     {/* Account list - each account is clickable */}
                     <div style={{ display: "grid", gap: 8 }}>
-                        {accounts.map((acct) => (
+                        {/**Accounts are sorted alphabetically */}
+                        {[...accounts].sort((a, b) => a.name.localeCompare(b.name)).map((acct) => (
                             <button
                                 key={acct.id}
                                 className="btn"
