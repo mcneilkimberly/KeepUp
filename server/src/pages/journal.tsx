@@ -147,16 +147,30 @@ function cleanCsvData(rows: string[][]): Entry[] {
     for (const [date, account, debit, credit] of rows.slice(4)) {
         if (!date && !account) continue;
 
-        // If 'date' exists, use it. Otherwise, use the old 'currentDate'
-        currentDate = date?.trim() || currentDate;
+        let formattedDate = currentDate;
+        const rawDate = typeof date === 'string' ? date.trim() : date;
+        
+        if (rawDate) {
+            // Safely split MM-DD-YYYY or MM/DD/YYYY or MM.DD.YYYY and rearrange to YYYY-MM-DD
+            const parts = String(rawDate).split(/[-./]/);
+            if (parts.length === 3) {
+                const [month, day, year] = parts;
+                // Formats into YYYY-MM-DD (backend/database expected format)
+                formattedDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            } else {
+                formattedDate = String(rawDate); // Fallback
+            }
+            currentDate = formattedDate;
+        }
 
-        if (account?.trim()) {
+        if (account && String(account).trim()) {
             cleanEntries.push({
-                date: currentDate,
-                accountName: account.trim(),
+                date: formattedDate,
+                accountName: String(account).trim(),
                 description: "CSV Import",
-                debit: (debit || "0.00").replace(/[,"]/g, ''),
-                credit: (credit || "0.00").replace(/[,"]/g, ''),
+                // Convert values to string before calling .replace in case of dynamic formatting
+                debit: String(debit || "0.00").replace(/[,"]/g, ''),
+                credit: String(credit || "0.00").replace(/[,"]/g, ''),
             });
         }
     }
