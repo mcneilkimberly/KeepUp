@@ -3,6 +3,7 @@ import Dashboard from "./pages/dashboard";
 import Journal from "./pages/journal";
 import Ledger from "./pages/ledger";
 import Statements from "./pages/statements";
+import TaxPlanner from "./pages/tax-planner";
 import Help from "./pages/help";
 import "./App.css";
 import ThemeToggle from "./ThemeToggle";
@@ -35,6 +36,7 @@ export default function App() {
                 <NavItem to="/journal" label="Journal" />
                 <NavItem to="/ledger" label="Ledger" />
                 <NavItem to="/statements" label="Statements" />
+                <NavItem to="/tax-planner" label="Tax Planner" />
                 <NavItem to="/help" label="Help" />
                 </nav>
 
@@ -49,6 +51,7 @@ export default function App() {
             <Route path="/journal" element={<Journal />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/statements" element={<Statements />} />
+            <Route path="/tax-planner" element={<TaxPlanner />} />
             <Route path="/help" element={<Help />} />
             <Route
               path="*"
@@ -82,6 +85,7 @@ export default function App() {
                 <Link className="footerLink" to="/journal">Journal</Link>
                 <Link className="footerLink" to="/ledger">Ledger</Link>
                 <Link className="footerLink" to="/statements">Statements</Link>
+                <Link className="footerLink" to="/tax-planner">Tax Planner</Link>
                 <Link className="footerLink" to="/help">Help</Link>
             </div>
 
