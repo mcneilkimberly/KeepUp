@@ -3,11 +3,11 @@
     line-height: 1.5;
     font-weight: 400;
 
-    --bg: #f7f7fb;
+    --bg: #c9d6ff4b;
     --text: rgba(20, 20, 20, 0.92);
     --muted: rgba(20, 20, 20, 0.68);
 
-    --surface: rgba(255, 255, 255, 0.84);      /* header/footer */
+    --surface: rgb(214, 230, 255);
     --card: rgba(0, 0, 0, 0.03);
     --border: rgba(0, 0, 0, 0.10);
 
@@ -30,11 +30,11 @@
 
 /* Dark theme overrides */
 :root[data-theme="dark"] {
-    --bg: #121212;
+    --bg: #00094551;
     --text: rgba(255, 255, 255, 0.92);
     --muted: rgba(255, 255, 255, 0.68);
 
-    --surface: rgba(18, 18, 18, 0.84);
+    --surface: rgba(0, 17, 61, 0.84);
     --card: rgba(255, 255, 255, 0.03);
     --border: rgba(255, 255, 255, 0.10);
 
