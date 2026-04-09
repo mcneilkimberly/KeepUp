@@ -75,17 +75,17 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 Head to: [http://localhost:5173](http://localhost:5173)
 <hr> 
 
-1. **Navigate to /backend**
+5. **Navigate to /backend**
 
-- npm install            # pulls in typescript, ts-node(-dev), @types/…
-- npm install uuid       # pulls in universally unique identifier 
-- npm install -D @types/uuid
-- npm install cors       # pulls in Cross-Origin Resource Sharing (CORS) in the Express/Connect applications
-- npm install -D @types/
-- npm install papaparse
-- npm install -D @types/papaparse    #pulls in so the csv's can be parsed
+6. npm install            # pulls in typescript, ts-node(-dev), @types/…
+7. npm install uuid       # pulls in universally unique identifier 
+8. npm install -D @types/uuid
+9. npm install cors       # pulls in Cross-Origin Resource Sharing (CORS) in the Express/Connect applications
+10. npm install -D @types/
+11. npm install papaparse
+12. npm install -D @types/papaparse    #pulls in so the csv's can be parsed
 
-- npm run dev           # run compiled output
+13. npm run dev           # run compiled output
 
 ## Project Goals
 
