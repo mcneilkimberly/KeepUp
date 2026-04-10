@@ -93,6 +93,25 @@ async function getDefaultBusinessId() {
     "INSERT INTO business (id, name, business_type, owner_id) VALUES (?, ?, ?, ?)",
     [businessId, "Default Business", "sole_prop", userResult.insertId]
   );
+
+  const [defaultAccountsRows]: any = await pool.query(
+    "SELECT name, type FROM default_Accounts"
+  );
+
+  if (defaultAccountsRows.length > 0) {
+    const values = defaultAccountsRows.map((acc: any) => [
+      uuidv4(),   
+      businessId, 
+      acc.name,   
+      acc.type    
+    ]);
+
+    await pool.query(
+      "INSERT INTO account (id, business_id, name, type) VALUES ?",
+      [values]
+    );
+  }
+
   return businessId;
 }
 
@@ -146,6 +165,9 @@ app.get("/businesses", async (req: Request, res: Response) => {
  * ]
  */
 app.get("/account", async (req: Request, res: Response) => {
+  // Automatically ensure there is a default business (which will also seed default accounts if it's new)
+  await getDefaultBusinessId();
+  
   const [rows] = await pool.query("SELECT id, name, type, business_id FROM account");
   res.json(rows);
 });
