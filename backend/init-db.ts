@@ -3,15 +3,38 @@ import mysql from "mysql2/promise";
 
 dotenv.config();
 
+const defaultAccounts = [
+  "Cash",
+  "Accounts Receivable",
+  "Inventory",
+  "Accounts Payable",
+  "Common Stock",
+  "Retained Earnings",
+  "Rent Expense",
+  "Payroll Expense",
+  "Supplies Expense",
+  "Cost of Goods Sold",
+  "Sales Revenue",
+  "Service Revenue"
+];
+
 async function initDatabase(){
     if (!process.env.DB){
         throw new Error("DB env variable is missing in the .env file");
     }
 
-    console.log("Connecting to DB")
-    const pool = await mysql.createPool(process.env.DB);
+    console.log("Connecting to DB server (without specifying DB name yet)")
+    // Strip the database name from the connection string so we can connect to the server itself first
+    const serverConnectionString = process.env.DB.replace(/\/keepup(\?.*)?$/, '/$1');
+    const serverPool = await mysql.createPool(serverConnectionString);
+    
     try{ 
-        await pool.query("CREATE DATABASE IF NOT EXISTS keepup;");
+        await serverPool.query("CREATE DATABASE IF NOT EXISTS keepup;");
+        await serverPool.end(); // close this temporary connection
+        
+        console.log("Connecting to keepup DB")
+        const pool = await mysql.createPool(process.env.DB);
+        
         await pool.query("USE keepup;");
 
         console.log("Creating users table")
@@ -83,16 +106,44 @@ async function initDatabase(){
             );
             `);
 
+        console.log("Creating default_Accounts table");
+        await pool.query(`CREATE TABLE IF NOT EXISTS default_Accounts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            business_type ENUM('sole_prop','llc','c_corp','s_corp','partnership'),
+            name VARCHAR(36) NOT NULL,
+            type ENUM('asset','liability','equity','revenue','expense','contraasset','contraliability','contraequity') NOT NULL
+        );`);
 
-
+        console.log("Checking if default accounts exist...");
+        const [rows]: any = await pool.query(`
+            SELECT COUNT(*) as count FROM default_Accounts`);
+            const accountCount = rows[0].count;
+            if (accountCount === 0){
+                console.log("Table is empty. Inserting default accounts");
+                await pool.query(`
+                    INSERT INTO default_Accounts (name, type) VALUES
+                    ('Cash', 'asset'),
+                    ('Accounts Receivable', 'asset'),
+                    ('Inventory', 'asset'),
+                    ('Accounts Payable', 'liability'),
+                    ('Common Stock', 'equity'),
+                    ('Retained Earnings', 'equity'),
+                    ('Rent Expense', 'expense'),
+                    ('Payroll Expense', 'expense'),
+                    ('Supplies Expense', 'expense'),
+                    ('Cost of Goods Sold', 'expense'),
+                    ('Sales Revenue', 'revenue'),
+                    ('Service Revenue', 'revenue')
+                    `);
+            }else{
+                console.log("Default accounts already exist. Skipping insertion.");
+            }
+            
         console.log("Tables have initialized! YAY!")
 
     } 
     catch (error){
         console.error("Couldnt Initialize Tables", error);
-    }finally{
-        await pool.end();
-
     }
 }
 
