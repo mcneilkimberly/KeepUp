@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ExpenseBreakdownChart from "./charts/expense-breakdown";
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -135,10 +136,14 @@ export default function Dashboard() {
                 </div>
 
                 <div className="card" style={{ gridColumn: "span 6", minHeight: 300 }}>
-                    <h2 className="cardTitle">Expense Breakdown</h2>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                        <p className="muted">Chart placeholder</p>
-                    </div>
+                    <h2 className="cardTitle">Recent Expense Breakdown</h2>
+                    <ExpenseBreakdownChart
+                        data={
+                            dashboardData?.recentEntries
+                                .filter((e) => e.credit > 0)
+                                .map((e) => ({ label: e.account, amount: e.credit })) ?? []
+                        }
+                    />
                 </div>
             </div>
 
