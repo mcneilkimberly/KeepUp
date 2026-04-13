@@ -36,17 +36,17 @@ function parseAmount(value: string) {
 function getBusinessTypeNote(type: BusinessType) {
   switch (type) {
     case "sole-proprietorship":
-      return "<brief info about this business type (1-3 sentences)>";
+      return "A business owned by one person that is not legally incorporated.";
     case "single-member-llc":
-      return "<brief info about this business type (1-3 sentences)>";
+      return "A business owned by one person that has legally incorporated as an LLC.";
     case "multi-member-llc":
-      return "<brief info about this business type (1-3 sentences)>";
+      return "A business owned by two or more people that has legally incorporated as an LLC.";
     case "partnership":
-      return "<brief info about this business type (1-3 sentences)>";
+      return "A business owned by two or more people that is not legally incorporated.";
     case "s-corp":
-      return "<brief info about this business type (1-3 sentences)>";
+      return "A business that has recieved S-Corporation status from the IRS.";
     case "c-corp":
-      return "<brief info about this business type (1-3 sentences)>";
+      return "A business that has legally been incorporated as a corporation.";
     default:
       return "";
   }
@@ -84,8 +84,8 @@ export default function TaxPlanner() {
       estimatedTax = taxableIncome * 0.21;
       taxMethod = "Estimated using the flat 21% corporate rate.";
     } else {
-      taxMethod =
-        "Pass-through / owner-level estimated tax logic can be added later using 2025 brackets.";
+      taxMethod = "Pass-through / owner-level estimated tax logic can be added later using 2025 brackets.";
+      estimatedTax = getEstimatedTax(taxableIncome);
     }
 
     return {
@@ -104,7 +104,30 @@ export default function TaxPlanner() {
     estimatedExpenses,
     creditsDeductions,
   ]);
+  function getEstimatedTax(profit: number): number {
+    const brackets = [
+        [11925, 0.10],
+        [48475, 0.12],
+        [103350, 0.22],
+        [197300, 0.24],
+        [250525, 0.32],
+        [626350, 0.35],
+        [Infinity, 0.37]
+    ];
 
+    let tax = 0;
+    let prev = 0;
+
+    for (const [limit, rate] of brackets) {
+        const taxable = Math.min(profit, limit) - prev;
+        if (taxable <= 0) break;
+
+        tax += taxable * rate;
+        prev = limit;
+    }
+
+    return Math.round(tax);
+  }
   function handleAddToJournal() {
     const payload = {
       source: "tax-planner",
