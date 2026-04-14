@@ -7,9 +7,11 @@ type SettingsProps = {
 };
 
 export default function Settings({ themePref, onThemeChange }: SettingsProps) {
-  const [accountName, setAccountName] = useState("");
-  const [email, setEmail] = useState("");
+  const currentEmail = "user@example.com"; // TODO: Replace with actual user email
+  const [accountName, setAccountName] = useState(currentEmail);
+  const [email, setEmail] = useState(currentEmail);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [preferences, setPreferences] = useState({
     notifications: true,
     autoSave: true,
@@ -54,9 +56,19 @@ export default function Settings({ themePref, onThemeChange }: SettingsProps) {
           </div>
 
           <div className="formGroup">
-            <label htmlFor="password">Password</label>
+            <div className="passwordLabelGroup">
+              <label htmlFor="password">Password</label>
+              <button
+                type="button"
+                className="showPasswordToggle"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
