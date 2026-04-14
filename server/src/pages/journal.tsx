@@ -380,7 +380,7 @@ async function createMissingAccounts(csvEntries: Entry[], currentAccounts: Accou
                     <div style={{ maxHeight: "400px", overflowY: "auto" }}>
                         {/* Table displaying all recent entries from the 'entries' state */}
                         <table className="table">
-                            <thead  style={{ position: "sticky", top: 0, backgroundColor: "var(--bg-card, #1e1e1e)", zIndex: 1 }}>
+                            <thead style={{ position: "sticky", top: 0, backgroundColor: "var(--table-head-bg)", zIndex: 1 }}>
                                 <tr>
                                     <th style={{ width: 140 }}>Date</th>
                                     <th>Description</th>
