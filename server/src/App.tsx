@@ -104,22 +104,21 @@ export default function App() {
             <Route path="/help" element={<Help />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route
-              path="/login"
-              element={
-                <div style={{ padding: 24 }}>
-                  <h2 style={{ marginTop: 0 }}>Login page coming next</h2>
-                  <p className="muted">You can build this after the Sign Up page.</p>
-                </div>
-              }
-            />
+                path="/login"
+                element={
+                    <div style={{ padding: 24 }}>
+                        <p style={{ margin: 0 }}>The <b>Login</b> page will be implemented soon.</p>
+                    </div>
+                }
+                />
             <Route
-              path="*"
-              element={
-                <div style={{ padding: 18 }}>
-                  <h2 style={{ marginTop: 0 }}>404</h2>
-                  <p className="muted">That page doesn't exist yet.</p>
-                </div>
-              }
+                path="*"
+                element={
+                    <div style={{ padding: 18 }}>
+                        <h2 style={{ marginTop: 0 }}>404</h2>
+                        <p className="muted">That page doesn't exist yet.</p>
+                    </div>
+                }
             />
           </Routes>
         </div>
