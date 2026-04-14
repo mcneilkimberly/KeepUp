@@ -8,10 +8,6 @@ type SettingsProps = {
 
 export default function Settings({ themePref, onThemeChange }: SettingsProps) {
   const currentEmail = "user@example.com"; // TODO: Replace with actual user email
-  const [accountName, setAccountName] = useState(currentEmail);
-  const [email, setEmail] = useState(currentEmail);
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [preferences, setPreferences] = useState({
     notifications: true,
     autoSave: true,
@@ -33,47 +29,33 @@ export default function Settings({ themePref, onThemeChange }: SettingsProps) {
       <section className="settingsSection">
         <h2>Account</h2>
         <div className="settingsForm">
-          <div className="formGroup">
-            <label htmlFor="accountName">Account Name</label>
-            <input
-              type="text"
-              id="accountName"
-              value={accountName}
-              onChange={(e) => setAccountName(e.target.value)}
-              placeholder="Enter your account name"
-            />
-          </div>
-
-          <div className="formGroup">
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-            />
-          </div>
-
-          <div className="formGroup">
-            <div className="passwordLabelGroup">
-              <label htmlFor="password">Password</label>
-              <button
-                type="button"
-                className="showPasswordToggle"
-                onClick={() => setShowPassword(!showPassword)}
-                title={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
+          <div className="fieldRow">
+            <div className="fieldDisplay">
+              <label>Account Name</label>
+              <span className="fieldValue">{currentEmail}</span>
             </div>
-            <input
-              type={showPassword ? "text" : "password"}
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-            />
+            <button type="button" className="changeFieldButton">
+              Change
+            </button>
+          </div>
+
+          <div className="fieldRow">
+            <div className="fieldDisplay">
+              <label>Email</label>
+              <span className="fieldValue">{currentEmail}</span>
+            </div>
+            <button type="button" className="changeFieldButton">
+              Change
+            </button>
+          </div>
+
+          <div className="fieldRow">
+            <div className="fieldDisplay">
+              <label>Password</label>
+            </div>
+            <button type="button" className="changeFieldButton">
+              Change
+            </button>
           </div>
         </div>
       </section>
