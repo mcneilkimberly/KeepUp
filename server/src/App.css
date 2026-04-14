@@ -399,6 +399,140 @@
     background: var(--btn-bg-hover);
 }
 
+.settingsIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s ease;
+}
+
+.settingsIcon:hover {
+    background: var(--btn-bg-hover);
+}
+
+.settingsPage {
+    max-width: 600px;
+}
+
+.settingsPage h1 {
+    margin: 0 0 24px 0;
+    font-size: 32px;
+}
+
+.settingsSection {
+    margin-bottom: 32px;
+}
+
+.settingsSection h2 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.settingsForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.formGroup label {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.formGroup input[type="text"],
+.formGroup input[type="email"],
+.formGroup input[type="password"] {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup input[type="email"]:focus,
+.formGroup input[type="password"]:focus {
+    outline: none;
+    border-color: var(--text);
+    background: var(--card);
+}
+
+.themeSettings {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.themeButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.themeButton:hover {
+    background: var(--btn-bg);
+}
+
+.themeButtonActive {
+    background: rgba(127, 127, 127, 0.15);
+}
+
+.themeIcon {
+    font-size: 24px;
+    display: block;
+}
+
+.themeName {
+    display: block;
+}
+
+.preferencesList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.preferenceItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.preferenceItem input[type="checkbox"] {
+    cursor: pointer;
+}
+
 .taxPlannerPage {
     width: 100%;
 }
