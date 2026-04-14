@@ -459,12 +459,15 @@
 .formGroup input[type="text"],
 .formGroup input[type="email"],
 .formGroup input[type="password"] {
+    width: 100%;
     padding: 10px 12px;
     border-radius: 12px;
     border: 1px solid var(--border);
     background: var(--input-bg);
     color: var(--text);
     font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
 }
 
 .formGroup input[type="text"]:focus,
@@ -493,26 +496,31 @@
     background: var(--card);
     color: var(--text);
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
     font-size: 14px;
     font-weight: 600;
+    font-family: inherit;
 }
 
 .themeButton:hover {
     background: var(--btn-bg);
+    transform: translateY(-2px);
 }
 
 .themeButtonActive {
-    background: rgba(127, 127, 127, 0.15);
+    background: rgba(127, 127, 127, 0.2);
+    border: 2px solid rgba(127, 127, 127, 0.4);
 }
 
 .themeIcon {
-    font-size: 24px;
+    font-size: 28px;
     display: block;
+    line-height: 1;
 }
 
 .themeName {
     display: block;
+    font-size: 13px;
 }
 
 .preferencesList {
@@ -527,10 +535,13 @@
     gap: 10px;
     cursor: pointer;
     font-size: 14px;
+    user-select: none;
 }
 
 .preferenceItem input[type="checkbox"] {
     cursor: pointer;
+    width: 16px;
+    height: 16px;
 }
 
 .taxPlannerPage {
