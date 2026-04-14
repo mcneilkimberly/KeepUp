@@ -7,8 +7,8 @@ import Statements from "./pages/statements";
 import TaxPlanner from "./pages/tax-planner";
 import Help from "./pages/help";
 import SignUp from "./pages/sign-up";
+import Settings from "./pages/settings";
 import "./App.css";
-import ThemeToggle from "./ThemeToggle";
 import {
   applyResolvedTheme,
   getStoredPreference,
@@ -88,11 +88,12 @@ export default function App() {
               <NavItem to="/help" label="Help" />
             </nav>
 
-            <ThemeToggle pref={themePref} onChange={setThemePref} />
-          </div>
-        </header>
+          <Link to="/settings" className="settingsIcon" title="Settings" aria-label="Open Settings">
+            ⚙
+          </Link>
+        </div>
+      </header>
       )}
-
       <main className={isAuthPage ? "authMain" : "appMain"}>
         <div className={isAuthPage ? "" : "appContainer"}>
           <Routes>
@@ -100,6 +101,7 @@ export default function App() {
             <Route path="/journal" element={<Journal />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/statements" element={<Statements />} />
+            <Route path="/settings" element={<Settings themePref={themePref} onThemeChange={setThemePref} />} />
             <Route path="/tax-planner" element={<TaxPlanner />} />
             <Route path="/help" element={<Help />} />
             <Route path="/sign-up" element={<SignUp />} />
