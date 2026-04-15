@@ -693,7 +693,7 @@ export default function Ledger() {
 
             <div className="grid">
                 {/* LEFT SIDEBAR: Account management */}
-                <div className="card" style={{ gridColumn: "span 3" }}>
+                <div className="card" style={{ gridColumn: "span 3", maxHeight: "700px", overflowY: "auto" }}>
                     <div className="row" style={{ marginBottom: 10 }}>
                         <h2 className="cardTitle" style={{ margin: 0 }}>Accounts</h2>
                         <span className="pill">Prototype</span>
@@ -796,7 +796,7 @@ export default function Ledger() {
                 </div>
 
                 {/* RIGHT PANEL: Account entries and details */}
-                <div className="card" style={{ gridColumn: "span 9" }}>
+                <div className="card" style={{ gridColumn: "span 9", maxHeight: "700px", overflowY: "auto" }}>
                     {/* Header section with title and controls */}
                     <div className="row" style={{ marginBottom: 10 }}>
                         <div>
