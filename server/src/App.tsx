@@ -137,33 +137,15 @@ export default function App() {
             </div>
 
             <div className="footerSections">
+              
               <div className="footerCol">
-                <div className="footerHeading">Pages</div>
-                <Link className="footerLink" to="/">Dashboard</Link>
-                <Link className="footerLink" to="/journal">Journal</Link>
-                <Link className="footerLink" to="/ledger">Ledger</Link>
-                <Link className="footerLink" to="/statements">Statements</Link>
-                <Link className="footerLink" to="/tax-planner">Tax Planner</Link>
-                <Link className="footerLink" to="/help">Help</Link>
-              </div>
-
-              <div className="footerCol">
-                <div className="footerHeading">Project</div>
                 <a
                   className="footerLink"
                   href="https://github.com/mcneilkimberly/KeepUp"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Repo
-                </a>
-                <a
-                  className="footerLink"
-                  href="https://ih1.redbubble.net/image.446409693.5124/st,small,507x507-pad,600x600,f8f8f8.u1.jpg"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Docs (idk)
+                  Repository (Github)
                 </a>
               </div>
             </div>
