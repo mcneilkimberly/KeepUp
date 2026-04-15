@@ -7,7 +7,7 @@ KeepUp is a full-stack bookkeeping and financial management application designed
 <br>
 
 Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE) project, KeepUp aims to combine accounting principles with a clean, modern user interface.
-<hr> 
+<hr>
 
 ## Overview
 
@@ -25,24 +25,24 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 - Clean, understandable UI
 - The goal is not just to store financial data, but to help users understand their financial position.
 
-<hr> 
+<hr>
 
 ## Core Features (Planned/In Progress)
 
-- Journal 
+- Journal
 - General ledger tracking
 - Account management
 - Visual summaries of financial data
 - Clean, modular React frontend
 
-<hr> 
+<hr>
 
 ## Tech Stack
 
 **Frontend**:
 
-- HTML 
-- CSS 
+- HTML
+- CSS
 - React
 - TypeScript
 - Vite
@@ -55,9 +55,10 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 
 **Other**:
 
+- Visual Studio Code IDE
 - Git + GitHub workflow
 
-<hr> 
+<hr>
 
 ## Running thr Project Locally
 
@@ -102,7 +103,7 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 - Production-ready deployment
 
 Beyond the course requirements, the ambition is to create something that could realistically serve real small businesses!
-<hr> 
+<hr>
 
 ## Academic Context
 
@@ -113,12 +114,12 @@ Beyond the course requirements, the ambition is to create something that could r
 - Frontend architecture
 - Financial domain modeling
 
-<hr> 
+<hr>
 
 ## The Team
 
 - **Julie Amon**: _Back-end Developer_, focusing on server-side logic, database storage and reference, and ensuring that users can interact with the website.
-- **Diego Corsino**: _Full Stack Development Overseer_, focusing on maintaining a high performance optimization and ensuring the proper front-end to database flow. 
+- **Diego Corsino**: _Full Stack Development Overseer_, focusing on maintaining a high performance optimization and ensuring the proper front-end to database flow.
 - **Kimberly "Kim" McNeil**: _Scrum Master_, delegating tasks and documentation, as well as creating visual infographics based on the acquired data and assisting with backend tasks that create and reference the database.
 - **Joseph "Joe" Morton**: _Financial Logician_, detailing all accounting logistics and guaranties that all mathematical and business foundations are accurate.
 - **[Aaron Schlossberg](https://www.aaronschlossberg.com/)**: _Front-end Developer_, focusing on designing the website and ensuring everything is properly and efficiently displayed for users.
