@@ -1246,3 +1246,28 @@ html.dark .authPage {
     background: rgba(21, 33, 61, 0.16);
     margin: 8px 0 12px;
 }
+
+/* Scrollbar styling to match theme */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--card);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-color: var(--border) var(--card);
+    scrollbar-width: thin;
+}
