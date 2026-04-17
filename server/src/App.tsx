@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes, Link } from "react-router-dom";
+import { NavLink, Route, Routes, Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import Dashboard from "./pages/dashboard";
 import Journal from "./pages/journal";
@@ -6,6 +6,7 @@ import Ledger from "./pages/ledger";
 import Statements from "./pages/statements";
 import TaxPlanner from "./pages/tax-planner";
 import Help from "./pages/help";
+import SignUp from "./pages/sign-up";
 import Settings from "./pages/settings";
 import "./App.css";
 import {
@@ -32,14 +33,13 @@ function NavItem({ to, label }: { to: string; label: string }) {
 }
 
 export default function App() {
+  const location = useLocation();
+
   const [themePref, setThemePref] = useState<ThemePreference>(() =>
     getStoredPreference()
   );
 
-  const resolvedTheme = useMemo(
-    () => resolveTheme(themePref),
-    [themePref]
-  );
+  const resolvedTheme = useMemo(() => resolveTheme(themePref), [themePref]);
 
   useEffect(() => {
     applyResolvedTheme(resolvedTheme);
@@ -66,32 +66,36 @@ export default function App() {
   const keepUpLogo =
     resolvedTheme === "dark" ? "/keepup-logo-dark.svg" : "/keepup-logo-light.svg";
 
+  const isAuthPage =
+    location.pathname === "/sign-up" || location.pathname === "/login";
+
   return (
     <div className="appShell">
-      <header className="appHeader">
-        <Link to="/" className="appTitleLink" aria-label="Go to KeepUp Dashboard">
-          <img className="brandLogo" src={keepUpLogo} alt="" aria-hidden="true" />
-          <span className="brand">KeepUp</span>
-        </Link>
+      {!isAuthPage && (
+        <header className="appHeader">
+          <Link to="/" className="appTitleLink" aria-label="Go to KeepUp Dashboard">
+            <img className="brandLogo" src={keepUpLogo} alt="" aria-hidden="true" />
+            <span className="brand">KeepUp</span>
+          </Link>
 
-        <div className="headerRight">
-          <nav className="nav" aria-label="Primary navigation">
-            <NavItem to="/" label="Dashboard" />
-            <NavItem to="/journal" label="Journal" />
-            <NavItem to="/ledger" label="Ledger" />
-            <NavItem to="/statements" label="Statements" />
-            <NavItem to="/tax-planner" label="Tax Planner" />
-            <NavItem to="/help" label="Help" />
-          </nav>
+          <div className="headerRight">
+            <nav className="nav" aria-label="Primary navigation">
+              <NavItem to="/" label="Dashboard" />
+              <NavItem to="/journal" label="Journal" />
+              <NavItem to="/ledger" label="Ledger" />
+              <NavItem to="/statements" label="Statements" />
+              <NavItem to="/tax-planner" label="Tax Planner" />
+              <NavItem to="/help" label="Help" />
+            </nav>
 
           <Link to="/settings" className="settingsIcon" title="Settings" aria-label="Open Settings">
             ⚙
           </Link>
         </div>
       </header>
-
-      <main className="appMain">
-        <div className="appContainer">
+      )}
+      <main className={isAuthPage ? "authMain" : "appMain"}>
+        <div className={isAuthPage ? "" : "appContainer"}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/journal" element={<Journal />} />
@@ -100,65 +104,76 @@ export default function App() {
             <Route path="/settings" element={<Settings themePref={themePref} onThemeChange={setThemePref} />} />
             <Route path="/tax-planner" element={<TaxPlanner />} />
             <Route path="/help" element={<Help />} />
+            <Route path="/sign-up" element={<SignUp />} />
             <Route
-              path="*"
-              element={
-                <div style={{ padding: 18 }}>
-                  <h2 style={{ marginTop: 0 }}>404</h2>
-                  <p className="muted">That page doesn't exist yet.</p>
-                </div>
-              }
+                path="/login"
+                element={
+                    <div style={{ padding: 24 }}>
+                        <p style={{ margin: 0 }}>The <b>Login</b> page will be implemented soon.</p>
+                    </div>
+                }
+                />
+            <Route
+                path="*"
+                element={
+                    <div style={{ padding: 18 }}>
+                        <h2 style={{ marginTop: 0 }}>404</h2>
+                        <p className="muted">That page doesn't exist yet.</p>
+                    </div>
+                }
             />
           </Routes>
         </div>
       </main>
 
-      <footer className="appFooter">
-        <div className="appContainer footerWrap">
-          <div className="footerTop">
-            <Link to="/" className="footerBrandLink" aria-label="Go to KeepUp Dashboard">
-              <img className="footerLogo" src={keepUpLogo} alt="" aria-hidden="true" />
-              <span className="footerBrand">KeepUp</span>
-            </Link>
-          </div>
-
-          <div className="footerSections">
-            <div className="footerCol">
-              <div className="footerHeading">Pages</div>
-              <Link className="footerLink" to="/">Dashboard</Link>
-              <Link className="footerLink" to="/journal">Journal</Link>
-              <Link className="footerLink" to="/ledger">Ledger</Link>
-              <Link className="footerLink" to="/statements">Statements</Link>
-              <Link className="footerLink" to="/tax-planner">Tax Planner</Link>
-              <Link className="footerLink" to="/help">Help</Link>
+      {!isAuthPage && (
+        <footer className="appFooter">
+          <div className="appContainer footerWrap">
+            <div className="footerTop">
+              <Link to="/" className="footerBrandLink" aria-label="Go to KeepUp Dashboard">
+                <img className="footerLogo" src={keepUpLogo} alt="" aria-hidden="true" />
+                <span className="footerBrand">KeepUp</span>
+              </Link>
             </div>
 
-            <div className="footerCol">
-              <div className="footerHeading">Project</div>
-              <a
-                className="footerLink"
-                href="https://github.com/mcneilkimberly/KeepUp"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Repo
-              </a>
-              <a
-                className="footerLink"
-                href="https://ih1.redbubble.net/image.446409693.5124/st,small,507x507-pad,600x600,f8f8f8.u1.jpg"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Docs (idk)
-              </a>
+            <div className="footerSections">
+              <div className="footerCol">
+                <div className="footerHeading">Pages</div>
+                <Link className="footerLink" to="/">Dashboard</Link>
+                <Link className="footerLink" to="/journal">Journal</Link>
+                <Link className="footerLink" to="/ledger">Ledger</Link>
+                <Link className="footerLink" to="/statements">Statements</Link>
+                <Link className="footerLink" to="/tax-planner">Tax Planner</Link>
+                <Link className="footerLink" to="/help">Help</Link>
+              </div>
+
+              <div className="footerCol">
+                <div className="footerHeading">Project</div>
+                <a
+                  className="footerLink"
+                  href="https://github.com/mcneilkimberly/KeepUp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Repo
+                </a>
+                <a
+                  className="footerLink"
+                  href="https://ih1.redbubble.net/image.446409693.5124/st,small,507x507-pad,600x600,f8f8f8.u1.jpg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Docs (idk)
+                </a>
+              </div>
+            </div>
+
+            <div className="footerBottom">
+              © {new Date().getFullYear()} KeepUp
             </div>
           </div>
-
-          <div className="footerBottom">
-            © {new Date().getFullYear()} KeepUp
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
