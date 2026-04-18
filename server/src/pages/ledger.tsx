@@ -342,6 +342,23 @@ function AccountModal({
                     placeholder="Account name"
                     style={{ width: "100%" }}
                 />
+                <select
+                    className="input"
+                    style = {{ 
+                        marginTop: 12, 
+                        display: "flex", 
+                        gap: 8, 
+                        width: "100%", 
+                        justifyContent: "flex-end" }}>
+                    <option>Asset</option>
+                    <option>Liability</option>
+                    <option>Equity</option>
+                    <option>Expense</option>
+                    <option>Revenue</option>
+                    <option>Contra-Asset</option>
+                    <option>Contra-Liability</option>
+                    <option>Contra-Equity</option>
+                </select>
                 
                 {/* Action buttons */}
                 <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "flex-end" }}>
