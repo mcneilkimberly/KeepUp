@@ -40,12 +40,28 @@ interface EntryLine {
 }
 
 export default function Journal() {
+<<<<<<< Updated upstream
     const [date, setDate] = useState("");
     const [description, setDescription] = useState("");
     const [lines, setLines] = useState<EntryLine[]>([
         { accountId: "", debit: "", credit: "" },
         { accountId: "", debit: "", credit: "" },
     ]);
+=======
+    // ============== STATE VARIABLES ==============
+    
+    // Form input states - user enters these values to create a new entry
+    const [date, setDate] = useState("");           // Date of the transaction
+    const [description, setDescription] = useState(""); // What the transaction was for
+    const [accountId, setAccountId] = useState("");    // Which account to post the entry to
+    const [debit, setDebit] = useState("");            // Debit amount (optional)
+    const [credit, setCredit] = useState("");          // Credit amount (optional)
+
+    
+    // Display states - populated from database
+    const [accounts, setAccounts] = useState<Account[]>([]); // List of all accounts from DB
+    const [entries, setEntries] = useState<Entry[]>([]);     // List of all recent entries from DB
+>>>>>>> Stashed changes
 
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [entries, setEntries] = useState<Entry[]>([]);
@@ -66,6 +82,7 @@ export default function Journal() {
         fetchRecentEntries();
     }, []);
 
+<<<<<<< Updated upstream
     // ── Line helpers ──────────────────────────────────────────────
     function updateLine(index: number, field: keyof EntryLine, value: string) {
         setLines((prev) => {
@@ -74,6 +91,53 @@ export default function Journal() {
             return next;
         });
         setBalanceError("");
+=======
+    /**
+     * handleAddEntry()
+     * 
+     * Submits a new journal entry to the backend and updates the recent entries display.
+     * 
+     * Steps:
+     * 1. Validates that required fields (date, description, accountId) are filled
+     * 2. Creates a POST request to /account/{accountId}/entries with the entry data
+     * 3. Converts empty debit/credit fields to "0.00" to ensure valid numbers
+     * 4. Sends the request to the backend
+     * 5. On success, calls fetchRecentEntries() to refresh the recent entries display
+     * 6. Resets all form fields to empty strings (clears the form)
+     * 7. Catches any errors and logs them
+     * 
+     * Called by: "Add entry" button onClick
+     */
+    function handleAddEntry() {
+        if (!date || !description || !accountId) return;
+        
+        fetch(API(`/account/${accountId}/entries`), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                date,
+                description,
+                debit: debit || "0.00",
+                credit: credit || "0.00",
+            }),
+        })
+            .then(() => {
+                // Fetch and display all recent entries
+                fetchRecentEntries();
+            })
+            .catch(console.error);
+    
+    function handleAddAccount(){
+        
+    }
+        
+        // Reset form to empty state
+        setDate("");
+        setDescription("");
+        setAccountId("");
+        setDebit("");
+        setCredit("");
+>>>>>>> Stashed changes
     }
 
     function addLine() {
@@ -255,7 +319,21 @@ export default function Journal() {
                             <div className="muted" style={{ fontSize: 11 }}>Credit</div>
                             <div />
                         </div>
+                        {/* Account dropdown - populated by 'accounts' array from database */}
+                        {/* controlled by 'accountId' state */}
+                        <label>
+                            <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Account</div>
+                            <select className="input" value={accountId} onChange={e => setAccountId(e.target.value)}>
+                                <option value="" disabled>Select an account…</option>
+                                {accounts.map((acct) => (
+                                    <option key={acct.id} value={acct.id}>
+                                        {acct.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
 
+<<<<<<< Updated upstream
                         {/* Entry lines */}
                         {lines.map((line, idx) => (
                             <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 90px 90px 28px", gap: 6, alignItems: "center" }}>
@@ -333,6 +411,26 @@ export default function Journal() {
 
                         <button type="button" className="btn" onClick={addLine} style={{ fontSize: 13 }}>
                             + Add line
+=======
+                        {/* Debit and Credit inputs side-by-side */}
+                        {/* Controlled by 'debit' and 'credit' states */}
+                        <div className="grid" style={{ marginTop: 0 }}>
+                            <label style={{ gridColumn: "span 6" }}>
+                                <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Debit</div>
+                                <input className="input" inputMode="decimal" placeholder="0.00" value={debit} onChange={e => setDebit(e.target.value)} />
+                            </label>
+                            <label style={{ gridColumn: "span 6" }}>
+                                <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Credit</div>
+                                <input className="input" inputMode="decimal" placeholder="0.00" value={credit} onChange={e => setCredit(e.target.value)} />
+                            </label>
+                        </div>
+                        {/* Submit button - disabled if any required field is empty */}
+                        <button className="btn btnPrimary" type="button" onClick={handleAddAccount} disabled={!date || !description || !accountId}>
+                            Add account
+                        </button>
+                        <button className="btn btnPrimary" type="button" onClick={handleAddEntry} disabled={!date || !description || !accountId}>
+                            Add entry
+>>>>>>> Stashed changes
                         </button>
 
                         <button
