@@ -13,6 +13,7 @@ import express, { Request, Response } from "express";
 import mysql, { Pool } from "mysql2/promise";
 import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
+import bcrypt from "bcrypt";
 
 // ============== SERVER SETUP ==============
 
@@ -523,6 +524,23 @@ app.get("/dashboard/monthly", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch monthly data" });
     }
 });
+/** SIGN UP  */
+app.post("/signup", async(req: Request, res: Response) => {
+  const {username, name, email, password} = req.body;
+  try{
+    const hashedpassword = await bcrypt.hash(password, 10);
+
+    await pool.query(`INSERT INTO users( username, name, email, password_hash) VALUES (?, ?, ?, ? )`,
+  [username, name, email, hashedpassword]
+    );
+    console.log("Successfully signed up user:", username);
+    res.status(201).json({ message: "User signed up successfully" });
+
+  }catch(error){
+    console.error("Error signing up:", error);
+    res.status(500).json({ error: "Failed to sign up" });
+  }
+})
 
 // ============== SERVER STARTUP ==============
 
