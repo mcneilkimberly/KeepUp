@@ -14,7 +14,7 @@
 import { useState, useEffect } from "react";
 
 // API helper function that constructs full API URLs
-const API = (path: string) => `http://localhost:3001${path}`;
+const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format

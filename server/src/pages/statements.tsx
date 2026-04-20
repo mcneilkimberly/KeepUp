@@ -14,7 +14,7 @@
 import { useState } from "react";
 
 // API helper function that constructs full API URLs
-const API = (path: string) => `http://localhost:3001${path}`;
+const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
 
 // ============== TYPES & INTERFACES ==============
 

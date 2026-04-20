@@ -51,8 +51,8 @@ export default function Dashboard() {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch("http://localhost:3001/dashboard/summary");
-                const monthlyRes = await fetch("http://localhost:3001/dashboard/monthly");
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/summary`);
+                const monthlyRes = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/monthly`);
                 if (monthlyRes.ok) {
                     const monthlyJson = await monthlyRes.json();
                     setMonthlyData(monthlyJson);
