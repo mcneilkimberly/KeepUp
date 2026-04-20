@@ -449,20 +449,23 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
     console.log("Dashboard summary endpoint called");
     
     // Get total debits across all entries
-    const [debitResult]: any = await pool.query(
-      `SELECT COALESCE(SUM(l.debit_amount), 0) as total_debit
-       FROM journalLines l
-       JOIN journalEntries e ON l.journal_entry_id = e.id`
+    const [incomeResult]: any = await pool.query(
+        `SELECT COALESCE(SUM(jl.credit_amount), 0) as total_income
+        FROM journalLines jl
+        JOIN journalEntries je ON jl.journal_entry_id = je.id
+        JOIN account a ON jl.account_id = a.id
+        WHERE a.type = 'revenue'`
     );
-    console.log("Debit result:", debitResult);
+    console.log("Income result:", incomeResult);
 
-    // Get total credits across all entries
-    const [creditResult]: any = await pool.query(
-      `SELECT COALESCE(SUM(l.credit_amount), 0) as total_credit
-       FROM journalLines l
-       JOIN journalEntries e ON l.journal_entry_id = e.id`
+    const [spendingResult]: any = await pool.query(
+        `SELECT COALESCE(SUM(jl.debit_amount), 0) as total_spending
+        FROM journalLines jl
+        JOIN journalEntries je ON jl.journal_entry_id = je.id
+        JOIN account a ON jl.account_id = a.id
+        WHERE a.type = 'expense'`
     );
-    console.log("Credit result:", creditResult);
+    console.log("Spending result:", spendingResult);
 
     // Get account count
     const [accountCount]: any = await pool.query(
@@ -482,10 +485,10 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
     console.log("Recent entries:", recentEntries);
 
     const response = {
-      totalIncome: parseFloat(debitResult[0].total_debit),
-      totalSpending: parseFloat(creditResult[0].total_credit),
-      accountCount: accountCount[0].count,
-      recentEntries: recentEntries
+        totalIncome: parseFloat(incomeResult[0].total_income),
+        totalSpending: parseFloat(spendingResult[0].total_spending),
+        accountCount: accountCount[0].count,
+        recentEntries: recentEntries
     };
     console.log("Sending response:", response);
     res.json(response);
@@ -493,6 +496,32 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
     console.error("Error fetching dashboard summary:", error);
     res.status(500).json({ error: "Failed to fetch dashboard summary" });
   }
+});
+
+// Monthly data endpoint for dashboard chart
+app.get("/dashboard/monthly", async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                DATE_FORMAT(je.entry_date, '%b %Y')  AS month,
+                DATE_FORMAT(je.entry_date, '%Y-%m')  AS month_sort,
+                SUM(CASE WHEN a.type = 'revenue'  THEN jl.credit_amount ELSE 0 END) AS revenue,
+                SUM(CASE WHEN a.type = 'expense'  THEN jl.debit_amount  ELSE 0 END) AS expenses
+            FROM journalEntries je
+            JOIN journalLines   jl ON jl.journal_entry_id = je.id
+            JOIN account        a  ON a.id = jl.account_id
+            WHERE je.entry_date >= DATE_FORMAT(
+                DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01'
+            )
+            AND je.is_posted = TRUE
+            GROUP BY month_sort, month
+            ORDER BY month_sort ASC
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch monthly data" });
+    }
 });
 
 // ============== SERVER STARTUP ==============

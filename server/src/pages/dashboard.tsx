@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ExpenseBreakdownChart from "./charts/expense-breakdown";
+import RevenueExpensesChart from "./charts/revenue-expenses-chart";
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -33,16 +34,29 @@ interface DashboardData {
     }>;
 }
 
+interface MonthlyDataPoint {
+    month: string;       // "Apr 2025"
+    month_sort: string;  // "2025-04" — not rendered, just used for ordering
+    revenue: number;
+    expenses: number;
+}
+
 export default function Dashboard() {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
                 const response = await fetch("http://localhost:3001/dashboard/summary");
+                const monthlyRes = await fetch("http://localhost:3001/dashboard/monthly");
+                if (monthlyRes.ok) {
+                    const monthlyJson = await monthlyRes.json();
+                    setMonthlyData(monthlyJson);
+                }
                 if (!response.ok) {
                     throw new Error("Failed to fetch dashboard data");
                 }
@@ -56,6 +70,7 @@ export default function Dashboard() {
             } finally {
                 setLoading(false);
             }
+            
         };
 
         fetchDashboardData();
@@ -130,9 +145,7 @@ export default function Dashboard() {
             <div className="grid" style={{ marginBottom: 24 }}>
                 <div className="card" style={{ gridColumn: "span 6", minHeight: 300 }}>
                     <h2 className="cardTitle">Revenue vs Expenses</h2>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-                        <p className="muted">Chart placeholder</p>
-                    </div>
+                    <RevenueExpensesChart data={monthlyData} />
                 </div>
 
                 <div className="card" style={{ gridColumn: "span 6", minHeight: 300 }}>
