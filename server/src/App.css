@@ -1247,6 +1247,31 @@ html.dark .authPage {
     margin: 8px 0 12px;
 }
 
+.authSectionTitle {
+    margin: 0 0 12px 0;
+    color: #1e2534;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.authFieldMeta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.authCharCount {
+    font-size: 12px;
+    color: #6a7891;
+    white-space: nowrap;
+}
+
+.authCharCountWarning {
+    color: #c94848;
+    font-weight: 700;
+}
+
 /* Scrollbar styling to match theme */
 ::-webkit-scrollbar {
     width: 10px;

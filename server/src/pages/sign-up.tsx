@@ -3,11 +3,15 @@ import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 
 type TouchedState = {
-  name: boolean;
-  email: boolean;
-  password: boolean;
-  confirmPassword: boolean;
+    username: boolean;
+    name: boolean;
+    email: boolean;
+    password: boolean;
+    confirmPassword: boolean;
 };
+
+const USERNAME_MIN = 5;
+const USERNAME_MAX = 25;
 
 function EyeIcon({ open }: { open: boolean }) {
   if (open) {
@@ -62,13 +66,15 @@ function getPasswordChecks(password: string) {
 }
 
 export default function SignUp() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+    const [username, setUsername] = useState("");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
   const [touched, setTouched] = useState<TouchedState>({
+    username: false,
     name: false,
     email: false,
     password: false,
@@ -97,14 +103,26 @@ export default function SignUp() {
 
   const errors = useMemo(() => {
     const result = {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+        username: "",
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
     };
 
+    const trimmedUsername = username.trim();
+
+    if (trimmedUsername.length === 0) {
+        result.username = "Enter a username.";
+    } else if (
+        trimmedUsername.length < USERNAME_MIN ||
+        trimmedUsername.length > USERNAME_MAX
+    ) {
+        result.username = "Username must be 5–25 characters.";
+    }
+
     if (name.trim().length === 0) {
-      result.name = "Please enter your name.";
+        result.name = "Please enter your name.";
     }
 
     if (email.trim().length === 0) {
@@ -127,9 +145,10 @@ export default function SignUp() {
     }
 
     return result;
-  }, [name, email, password, confirmPassword, passwordChecks]);
+  }, [username, name, email, password, confirmPassword, passwordChecks]);
 
   const formIsValid =
+    !errors.username &&
     !errors.name &&
     !errors.email &&
     !errors.password &&
@@ -143,17 +162,19 @@ export default function SignUp() {
     e.preventDefault();
 
     setTouched({
-      name: true,
-      email: true,
-      password: true,
-      confirmPassword: true,
-    });
+        username: true,
+        name: true,
+        email: true,
+        password: true,
+        confirmPassword: true,
+});
 
     if (!formIsValid) {
       return;
     }
 
     console.log("Sign up form submitted:", {
+      username,
       name,
       email,
       password,
@@ -181,27 +202,61 @@ export default function SignUp() {
 
             <div className="authTopDivider"/>
 
-            <p><b><u>Sign Up</u></b></p>
+            <p className="authSectionTitle"><b><u>Sign Up</u></b></p>
 
             <form className="authForm" onSubmit={handleSubmit} noValidate>
               <div className="authField">
+            <label htmlFor="signup-username" className="authLabel">
+                Username
+            </label>
+            <input
+                id="signup-username"
+                className={`authInput ${touched.username && errors.username ? "authInputError" : ""}`}
+                type="text"
+                placeholder="Enter a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onBlur={() => markTouched("username")}
+                autoComplete="username"
+                maxLength={USERNAME_MAX}
+            />
+
+            <div className="authFieldMeta">
+            <span className="authHelperText">5–25 characters.</span>
+            <span
+                className={`authCharCount ${
+                username.trim().length > 0 && username.trim().length < USERNAME_MIN
+                    ? "authCharCountWarning"
+                    : ""
+                }`}
+            >
+                {username.length}/{USERNAME_MAX}
+            </span>
+            </div>
+
+            {touched.username && errors.username && (
+                <div className="authErrorText">{errors.username}</div>
+            )}
+            </div>
+
+            <div className="authField">
                 <label htmlFor="signup-name" className="authLabel">
-                  Name
+                    Name
                 </label>
                 <input
-                  id="signup-name"
-                  className={`authInput ${touched.name && errors.name ? "authInputError" : ""}`}
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onBlur={() => markTouched("name")}
-                  autoComplete="name"
+                    id="signup-name"
+                    className={`authInput ${touched.name && errors.name ? "authInputError" : ""}`}
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={() => markTouched("name")}
+                    autoComplete="name"
                 />
                 {touched.name && errors.name && (
-                  <div className="authErrorText">{errors.name}</div>
+                    <div className="authErrorText">{errors.name}</div>
                 )}
-              </div>
+            </div>
 
               <div className="authField">
                 <label htmlFor="signup-email" className="authLabel">

@@ -1,4 +1,5 @@
 import { NavLink, Route, Routes, Link, useLocation } from "react-router-dom";
+import type { NavLinkRenderProps } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import Dashboard from "./pages/dashboard";
 import Journal from "./pages/journal";
@@ -25,7 +26,9 @@ function NavItem({ to, label }: { to: string; label: string }) {
   return (
     <NavLink
       to={to}
-      className={({ isActive }) => (isActive ? "navItem navItemActive" : "navItem")}
+      className={({ isActive }: NavLinkRenderProps) =>
+        isActive ? "navItem navItemActive" : "navItem"
+      }
     >
       {label}
     </NavLink>
