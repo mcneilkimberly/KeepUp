@@ -29,6 +29,8 @@ async function initDatabase(){
     const serverPool = await mysql.createPool(serverConnectionString);
     
     try{ 
+        await serverPool.query("DROP DATABASE IF EXISTS keepup;");
+
         await serverPool.query("CREATE DATABASE IF NOT EXISTS keepup;");
         await serverPool.end(); // close this temporary connection
         
@@ -41,8 +43,9 @@ async function initDatabase(){
         await pool.query(`CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
             username VARCHAR(36) UNIQUE NOT NULL,
+            name VARCHAR(255),
             email VARCHAR(36) UNIQUE NOT NULL,
-            password_hash VARCHAR(36) NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             `);

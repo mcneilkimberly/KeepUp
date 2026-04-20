@@ -13,6 +13,7 @@ import express, { Request, Response } from "express";
 import mysql, { Pool } from "mysql2/promise";
 import { v4 as uuidv4 } from "uuid";
 import cors from "cors";
+import bcrypt from "bcrypt";
 
 // ============== SERVER SETUP ==============
 
@@ -498,32 +499,6 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
     console.error("Error fetching dashboard summary:", error);
     res.status(500).json({ error: "Failed to fetch dashboard summary" });
   }
-});
-
-// Monthly data endpoint for dashboard chart
-app.get("/dashboard/monthly", async (req, res) => {
-    try {
-        const [rows] = await pool.query(`
-            SELECT
-                DATE_FORMAT(je.entry_date, '%b %Y')  AS month,
-                DATE_FORMAT(je.entry_date, '%Y-%m')  AS month_sort,
-                SUM(CASE WHEN a.type = 'revenue'  THEN jl.credit_amount ELSE 0 END) AS revenue,
-                SUM(CASE WHEN a.type = 'expense'  THEN jl.debit_amount  ELSE 0 END) AS expenses
-            FROM journalEntries je
-            JOIN journalLines   jl ON jl.journal_entry_id = je.id
-            JOIN account        a  ON a.id = jl.account_id
-            WHERE je.entry_date >= DATE_FORMAT(
-                DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01'
-            )
-            AND je.is_posted = TRUE
-            GROUP BY month_sort, month
-            ORDER BY month_sort ASC
-        `);
-        res.json(rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to fetch monthly data" });
-    }
 });
 
 // ============== SERVER STARTUP ==============

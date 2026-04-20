@@ -89,7 +89,11 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 
 12. **npm install -D @types/papaparse**    #pulls in so the csv's can be parsed
 
-13. **npm run dev**           # run compiled output
+13. **npm install bcrypt**
+
+14. **npm install --save-dev @types/bcrypt**
+
+15. **npm run dev**           # run compiled output
 
 ## Project Goals
 
