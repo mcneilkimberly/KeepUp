@@ -398,3 +398,214 @@
     border-color: var(--border);
     background: var(--btn-bg-hover);
 }
+
+.taxPlannerPage {
+    width: 100%;
+}
+
+.taxPlannerHero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.taxPlannerEyebrow {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.taxPlannerIntro {
+    margin-top: 12px;
+    max-width: 760px;
+    font-size: 18px;
+}
+
+.taxPlannerActions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.taxPlannerSpan12 {
+    grid-column: span 12;
+}
+
+.taxPlannerSpan8 {
+    grid-column: span 8;
+}
+
+.taxPlannerSpan7 {
+    grid-column: span 7;
+}
+
+.taxPlannerSpan5 {
+    grid-column: span 5;
+}
+
+.taxPlannerSpan4 {
+    grid-column: span 4;
+}
+
+.taxPlannerOverviewHeader {
+    margin-bottom: 14px;
+}
+
+.taxPlannerOverviewGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.taxPlannerMiniCard {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--card);
+    padding: 14px;
+}
+
+.taxPlannerMiniLabel {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.taxPlannerMiniValue {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.taxPlannerMiniText {
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.taxPlannerLabel {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.taxPlannerSmallNote {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.taxPlannerInfoBox {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.taxPlannerSubheading {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.taxPlannerLogicList {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.taxPlannerLogicRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+}
+
+.taxPlannerLogicResult {
+    background: var(--nav-active-bg);
+}
+
+.taxPlannerTable td:last-child {
+    min-width: 220px;
+}
+
+.taxPlannerKpis {
+    grid-template-columns: 1fr;
+}
+
+.taxPlannerSummaryBox,
+.taxPlannerJournalBox {
+    margin-top: 18px;
+}
+
+.taxPlannerSummaryRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.taxPlannerSummaryRow:last-child {
+    border-bottom: none;
+}
+
+.taxPlannerSummaryStrong {
+    max-width: 280px;
+    text-align: right;
+    line-height: 1.4;
+}
+
+@media (max-width: 1100px) {
+    .taxPlannerSpan12,
+    .taxPlannerSpan8,
+    .taxPlannerSpan7,
+    .taxPlannerSpan5,
+    .taxPlannerSpan4 {
+        grid-column: span 12;
+    }
+
+    .taxPlannerOverviewGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .taxPlannerKpis {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    }
+
+    @media (max-width: 780px) {
+    .taxPlannerHero {
+        align-items: flex-start;
+    }
+
+    .taxPlannerIntro {
+        font-size: 16px;
+    }
+
+    .taxPlannerLogicRow,
+    .taxPlannerSummaryRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .taxPlannerSummaryStrong {
+        max-width: none;
+        text-align: left;
+    }
+
+    .taxPlannerKpis,
+    .taxPlannerOverviewGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .taxPlannerTable td:last-child {
+        min-width: 0;
+    }
+}

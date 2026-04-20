@@ -62,6 +62,7 @@ interface Entry {
     description: string;
     debit: string;
     credit: string;
+    accountName?: string;
 }
 
 /**
@@ -739,7 +740,8 @@ export default function Ledger() {
 
                     {/* Account list - each account is clickable */}
                     <div style={{ display: "grid", gap: 8 }}>
-                        {accounts.map((acct) => (
+                        {/**Accounts are sorted alphabetically */}
+                        {[...accounts].sort((a, b) => a.name.localeCompare(b.name)).map((acct) => (
                             <button
                                 key={acct.id}
                                 className="btn"
@@ -853,6 +855,7 @@ export default function Ledger() {
                             </button>
                             
                             {/* Export CSV button - downloads entries as CSV, disabled if no account selected */}
+
                             <button
                                 className="btn"
                                 type="button"
