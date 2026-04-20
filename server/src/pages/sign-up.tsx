@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+// API helper function that constructs full API URLs
+const API = (path: string) => `http://localhost:3001${path}`;
 
 type TouchedState = {
     username: boolean;
@@ -66,6 +69,8 @@ function getPasswordChecks(password: string) {
 }
 
 export default function SignUp() {
+  const navigate = useNavigate();
+
     const [username, setUsername] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -158,7 +163,9 @@ export default function SignUp() {
     setTouched((prev) => ({ ...prev, [field]: true }));
   }
 
-  function handleSubmit(e: FormEvent) {
+
+  /**Handles the sign-up information submission */
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
     setTouched({
@@ -173,13 +180,27 @@ export default function SignUp() {
       return;
     }
 
-    console.log("Sign up form submitted:", {
-      username,
-      name,
-      email,
-      password,
-      confirmPassword,
-    });
+    try {
+      const response = await fetch(API("/signup"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          name,
+          email,
+          password, 
+        }),
+      });
+    if (response.ok){
+      console.log("User Created Successfully");
+      navigate("/");
+    } else{
+      const data = await response.json();
+      console.error("Signup Failed:", data.error);
+    }
+  } catch (error){
+    console.error("An error occurred during signup:", error);
+  }
   }
 
   return (
