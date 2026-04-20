@@ -450,20 +450,23 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
     console.log("Dashboard summary endpoint called");
     
     // Get total debits across all entries
-    const [debitResult]: any = await pool.query(
-      `SELECT COALESCE(SUM(l.debit_amount), 0) as total_debit
-       FROM journalLines l
-       JOIN journalEntries e ON l.journal_entry_id = e.id`
+    const [incomeResult]: any = await pool.query(
+        `SELECT COALESCE(SUM(jl.credit_amount), 0) as total_income
+        FROM journalLines jl
+        JOIN journalEntries je ON jl.journal_entry_id = je.id
+        JOIN account a ON jl.account_id = a.id
+        WHERE a.type = 'revenue'`
     );
-    console.log("Debit result:", debitResult);
+    console.log("Income result:", incomeResult);
 
-    // Get total credits across all entries
-    const [creditResult]: any = await pool.query(
-      `SELECT COALESCE(SUM(l.credit_amount), 0) as total_credit
-       FROM journalLines l
-       JOIN journalEntries e ON l.journal_entry_id = e.id`
+    const [spendingResult]: any = await pool.query(
+        `SELECT COALESCE(SUM(jl.debit_amount), 0) as total_spending
+        FROM journalLines jl
+        JOIN journalEntries je ON jl.journal_entry_id = je.id
+        JOIN account a ON jl.account_id = a.id
+        WHERE a.type = 'expense'`
     );
-    console.log("Credit result:", creditResult);
+    console.log("Spending result:", spendingResult);
 
     // Get account count
     const [accountCount]: any = await pool.query(
@@ -483,10 +486,10 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
     console.log("Recent entries:", recentEntries);
 
     const response = {
-      totalIncome: parseFloat(debitResult[0].total_debit),
-      totalSpending: parseFloat(creditResult[0].total_credit),
-      accountCount: accountCount[0].count,
-      recentEntries: recentEntries
+        totalIncome: parseFloat(incomeResult[0].total_income),
+        totalSpending: parseFloat(spendingResult[0].total_spending),
+        accountCount: accountCount[0].count,
+        recentEntries: recentEntries
     };
     console.log("Sending response:", response);
     res.json(response);
@@ -495,24 +498,6 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch dashboard summary" });
   }
 });
-
-/** SIGN UP  */
-app.post("/signup", async(req: Request, res: Response) => {
-  const {username, name, email, password} = req.body;
-  try{
-    const hashedpassword = await bcrypt.hash(password, 10);
-
-    await pool.query(`INSERT INTO users( username, name, email, password_hash) VALUES (?, ?, ?, ? )`,
-  [username, name, email, hashedpassword]
-    );
-    console.log("Successfully signed up user:", username);
-    res.status(201).json({ message: "User signed up successfully" });
-
-  }catch(error){
-    console.error("Error signing up:", error);
-    res.status(500).json({ error: "Failed to sign up" });
-  }
-})
 
 // ============== SERVER STARTUP ==============
 
