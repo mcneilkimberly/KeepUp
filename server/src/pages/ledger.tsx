@@ -45,6 +45,8 @@ interface Account {
     //id is a string because we're using uuids, so we'll just treat it as a string for flexibility
     id: string;
     name: string;
+    // Claude suggested this
+    type: string;
 }
 
 /**
@@ -295,16 +297,20 @@ function EntryModal({
  * - Only saves if name is not empty
  */
 function AccountModal({
+    // Claude suggested all initial type and type related functionality
     initialName = "",
+    initialType = "Asset",
     onSave,
     onClose,
 }: {
     initialName?: string;
-    onSave: (name: string) => void;
+    initialType?: string;
+    onSave: (name: string, type: string) => void;
     onClose: () => void;
 }) {
     // State for the account name input
     const [name, setName] = useState(initialName);
+    const [type, setType] = useState(initialType);
     
     return (
         <div
@@ -344,6 +350,9 @@ function AccountModal({
                 />
                 <select
                     className="input"
+                    // Value and onChange suggested by Claude
+                    value = {type}
+                    onChange={(e) => setType(e.target.value)}
                     style = {{ 
                         marginTop: 12, 
                         display: "flex", 
@@ -369,7 +378,8 @@ function AccountModal({
                         onClick={() => {
                             const trimmed = name.trim();
                             if (trimmed) {
-                                onSave(trimmed);
+                                // Type suggested by Claude
+                                onSave(trimmed, type);
                             }
                         }}
                     >
@@ -501,11 +511,12 @@ export default function Ledger() {
      * 
      * Called by: AccountModal's onSave (when user clicks Save in "Add account" dialog)
      */
-    function addAccount(name: string) {
+    // Type suggested by Claude
+    function addAccount(name: string, type: string) {
         fetch(API("/account"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({ name,  type}),
         })
             .then((r) => r.json())
             .then((acct: Account) => {
@@ -529,21 +540,21 @@ export default function Ledger() {
      * 
      * Called by: AccountModal's onSave (when user clicks Save in "Rename account" dialog)
      */
-    function renameAccount(newName: string) {
+    function renameAccount(newName: string, newType: string) {
         if (!selectedAccount) return;
         fetch(API(`/account/${selectedAccount.id}`), {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: newName }),
+            body: JSON.stringify({ name: newName, type: newType }),
         }).then(() => {
             // Update the account in the list
             setAccounts((prev) =>
                 prev.map((a) =>
-                    a.id === selectedAccount.id ? { ...a, name: newName } : a
+                    a.id === selectedAccount.id ? { ...a, name: newName, type: newType } : a
                 )
             );
             // Update the selected account with new name
-            setSelectedAccount((a) => (a ? { ...a, name: newName } : null));
+            setSelectedAccount((a) => (a ? { ...a, name: newName, type: newType } : null));
         });
     }
 
@@ -776,8 +787,8 @@ export default function Ledger() {
                     {/* "Add account" modal */}
                     {isAdding && (
                         <AccountModal
-                            onSave={(name) => {
-                                addAccount(name);
+                            onSave={(name, type) => {
+                                addAccount(name, type);
                                 setIsAdding(false);
                             }}
                             onClose={() => setIsAdding(false)}
@@ -786,10 +797,12 @@ export default function Ledger() {
                     
                     {/* "Rename account" modal */}
                     {isRenaming && selectedAccount && (
+                        // Type functionality implemented by Claude
                         <AccountModal
                             initialName={selectedAccount.name}
-                            onSave={(name) => {
-                                renameAccount(name);
+                            initialType={selectedAccount.type}
+                            onSave={(name, type) => {
+                                renameAccount(name, type);
                                 setIsRenaming(false);
                             }}
                             onClose={() => setIsRenaming(false)}
