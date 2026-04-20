@@ -93,6 +93,25 @@ async function getDefaultBusinessId() {
     "INSERT INTO business (id, name, business_type, owner_id) VALUES (?, ?, ?, ?)",
     [businessId, "Default Business", "sole_prop", userResult.insertId]
   );
+
+  const [defaultAccountsRows]: any = await pool.query(
+    "SELECT name, type FROM default_Accounts"
+  );
+
+  if (defaultAccountsRows.length > 0) {
+    const values = defaultAccountsRows.map((acc: any) => [
+      uuidv4(),   
+      businessId, 
+      acc.name,   
+      acc.type    
+    ]);
+
+    await pool.query(
+      "INSERT INTO account (id, business_id, name, type) VALUES ?",
+      [values]
+    );
+  }
+
   return businessId;
 }
 
@@ -146,6 +165,9 @@ app.get("/businesses", async (req: Request, res: Response) => {
  * ]
  */
 app.get("/account", async (req: Request, res: Response) => {
+  // Automatically ensure there is a default business (which will also seed default accounts if it's new)
+  await getDefaultBusinessId();
+  
   const [rows] = await pool.query("SELECT id, name, type, business_id FROM account");
   res.json(rows);
 });
@@ -409,58 +431,97 @@ app.post("/account/:id/entries", async (req: Request, res: Response) => {
   res.sendStatus(201);
 });
 
+/* -------- DASHBOARD -------- */
+
 /**
- * DELETE /account/:id/entries/:entryId
+ * GET /dashboard/summary
  * 
- * Deletes a specific journal entry (line) for an account.
+ * Returns dashboard summary statistics:
+ * - Total debit (sum of all debits across all entries)
+ * - Total credit (sum of all credits across all entries)
+ * - Total account count
+ * - Recent entries (last 5)
  * 
- * URL params:
- * - id: account UUID that owns the entry
- * - entryId: journalLines ID to delete
- * 
- * Steps:
- * 1. Extracts account id and entry id from URL
- * 2. Deletes the journal line from the database
- * 3. Optionally cleans up orphaned journal entries (entries with no lines)
- * 4. Returns 204 No Content on success
- * 
- * Note: The journalEntry itself is left in the database even if it has no lines.
- * This preserves historical records. If you want to clean up orphaned entries,
- * you can enable the cleanup query below.
+ * Returns: Object with summary stats and recent entries
  */
-app.delete("/account/:id/entries/:entryId", async (req: Request, res: Response) => {
-  const { id, entryId } = req.params;
-  
-  // Get the journal_entry_id before deleting the line
-  const [lines]: any = await pool.query(
-    "SELECT journal_entry_id FROM journalLines WHERE id = ? AND account_id = ?",
-    [entryId, id]
-  );
-  
-  // Delete the journal line
-  await pool.query(
-    "DELETE FROM journalLines WHERE id = ? AND account_id = ?",
-    [entryId, id]
-  );
-  
-  // Optional: Clean up orphaned journal entries (entries with no lines)
-  if (lines.length > 0) {
-    const journalEntryId = lines[0].journal_entry_id;
-    const [remainingLines]: any = await pool.query(
-      "SELECT COUNT(*) as count FROM journalLines WHERE journal_entry_id = ?",
-      [journalEntryId]
-    );
+app.get("/dashboard/summary", async (req: Request, res: Response) => {
+  try {
+    console.log("Dashboard summary endpoint called");
     
-    // If no more lines for this entry, delete the entry too
-    if (remainingLines[0].count === 0) {
-      await pool.query(
-        "DELETE FROM journalEntries WHERE id = ?",
-        [journalEntryId]
-      );
-    }
+    // Get total debits across all entries
+    const [incomeResult]: any = await pool.query(
+        `SELECT COALESCE(SUM(jl.credit_amount), 0) as total_income
+        FROM journalLines jl
+        JOIN journalEntries je ON jl.journal_entry_id = je.id
+        JOIN account a ON jl.account_id = a.id
+        WHERE a.type = 'revenue'`
+    );
+    console.log("Income result:", incomeResult);
+
+    const [spendingResult]: any = await pool.query(
+        `SELECT COALESCE(SUM(jl.debit_amount), 0) as total_spending
+        FROM journalLines jl
+        JOIN journalEntries je ON jl.journal_entry_id = je.id
+        JOIN account a ON jl.account_id = a.id
+        WHERE a.type = 'expense'`
+    );
+    console.log("Spending result:", spendingResult);
+
+    // Get account count
+    const [accountCount]: any = await pool.query(
+      `SELECT COUNT(*) as count FROM account`
+    );
+    console.log("Account count result:", accountCount);
+
+    // Get recent entries (last 5)
+    const [recentEntries]: any = await pool.query(
+      `SELECT e.entry_date as date, e.description, a.name as account, l.debit_amount as debit, l.credit_amount as credit
+       FROM journalLines l
+       JOIN journalEntries e ON l.journal_entry_id = e.id
+       JOIN account a ON l.account_id = a.id
+       ORDER BY e.entry_date DESC
+       LIMIT 5`
+    );
+    console.log("Recent entries:", recentEntries);
+
+    const response = {
+        totalIncome: parseFloat(incomeResult[0].total_income),
+        totalSpending: parseFloat(spendingResult[0].total_spending),
+        accountCount: accountCount[0].count,
+        recentEntries: recentEntries
+    };
+    console.log("Sending response:", response);
+    res.json(response);
+  } catch (error) {
+    console.error("Error fetching dashboard summary:", error);
+    res.status(500).json({ error: "Failed to fetch dashboard summary" });
   }
-  
-  res.sendStatus(204);
+});
+
+// Monthly data endpoint for dashboard chart
+app.get("/dashboard/monthly", async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                DATE_FORMAT(je.entry_date, '%b %Y')  AS month,
+                DATE_FORMAT(je.entry_date, '%Y-%m')  AS month_sort,
+                SUM(CASE WHEN a.type = 'revenue'  THEN jl.credit_amount ELSE 0 END) AS revenue,
+                SUM(CASE WHEN a.type = 'expense'  THEN jl.debit_amount  ELSE 0 END) AS expenses
+            FROM journalEntries je
+            JOIN journalLines   jl ON jl.journal_entry_id = je.id
+            JOIN account        a  ON a.id = jl.account_id
+            WHERE je.entry_date >= DATE_FORMAT(
+                DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01'
+            )
+            AND je.is_posted = TRUE
+            GROUP BY month_sort, month
+            ORDER BY month_sort ASC
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch monthly data" });
+    }
 });
 
 // ============== SERVER STARTUP ==============
