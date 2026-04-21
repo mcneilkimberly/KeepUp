@@ -18,7 +18,9 @@ import bcrypt from "bcrypt";
 // ============== SERVER SETUP ==============
 
 const app = express();
-app.use(cors()); // Enable cross-origin requests from frontend
+app.use(cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+})); // Enable cross-origin requests from frontend
 app.use(express.json()); // Parse incoming JSON request bodies
 
 // ============== DATABASE CONNECTION ==============
