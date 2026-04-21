@@ -499,6 +499,31 @@ app.get("/dashboard/summary", async (req: Request, res: Response) => {
   }
 });
 
+
+/** SIGN UP  */
+app.post("/signup", async(req: Request, res: Response) => {
+  const {username, name, email, password} = req.body;
+  
+  try {
+    // 1. Hash the password INSIDE the try block
+    const hashedpassword = await bcrypt.hash(password, 10);
+    
+    // 2. Insert into the database
+    await pool.query(
+      `INSERT INTO users(username, name, email, password_hash) VALUES (?, ?, ?, ?)`,
+      [username, name, email, hashedpassword]
+    );
+    
+    console.log("Successfully signed up user:", username);
+    res.status(201).json({ message: "User signed up successfully" });
+
+  } catch(error) {
+    console.error("Error signing up:", error);
+    res.status(500).json({ error: "Failed to sign up" });
+  }
+})
+
+
 // ============== SERVER STARTUP ==============
 
 /**

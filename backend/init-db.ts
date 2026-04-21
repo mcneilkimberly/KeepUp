@@ -29,8 +29,6 @@ async function initDatabase(){
     const serverPool = await mysql.createPool(serverConnectionString);
     
     try{ 
-        await serverPool.query("DROP DATABASE IF EXISTS keepup;");
-
         await serverPool.query("CREATE DATABASE IF NOT EXISTS keepup;");
         await serverPool.end(); // close this temporary connection
         
