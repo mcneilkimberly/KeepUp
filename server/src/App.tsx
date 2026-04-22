@@ -67,8 +67,7 @@ export default function App() {
     };
   }, [themePref]);
 
-  const keepUpLogo =
-    resolvedTheme === "dark" ? "/keepup-logo-dark.svg" : "/keepup-logo-light.svg";
+  const keepUpLogo = "/K_trans.png";
 
   const isAuthPage =
     location.pathname === "/sign-up" || location.pathname === "/login";
