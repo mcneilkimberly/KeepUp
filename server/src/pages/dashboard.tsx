@@ -189,10 +189,10 @@ export default function Dashboard() {
                                 </div>
                                 <div style={{ textAlign: "right" }}>
                                     {entry.debit > 0 && (
-                                        <div style={{ color: "#4ade80" }}>+{formatCurrency(entry.debit)}</div>
+                                        <div>Debit {formatCurrency(entry.debit)}</div>
                                     )}
                                     {entry.credit > 0 && (
-                                        <div style={{ color: "#f87171" }}>-{formatCurrency(entry.credit)}</div>
+                                        <div>Credit {formatCurrency(entry.credit)}</div>
                                     )}
                                 </div>
                             </div>
