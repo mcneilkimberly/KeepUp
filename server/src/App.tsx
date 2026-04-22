@@ -8,6 +8,7 @@ import Statements from "./pages/statements";
 import TaxPlanner from "./pages/tax-planner";
 import Help from "./pages/help";
 import SignUp from "./pages/sign-up";
+import Login from "./pages/login";
 import Settings from "./pages/settings";
 import "./App.css";
 import {
@@ -108,14 +109,7 @@ export default function App() {
             <Route path="/tax-planner" element={<TaxPlanner />} />
             <Route path="/help" element={<Help />} />
             <Route path="/sign-up" element={<SignUp />} />
-            <Route
-                path="/login"
-                element={
-                    <div style={{ padding: 24 }}>
-                        <p style={{ margin: 0 }}>The <b>Login</b> page will be implemented soon.</p>
-                    </div>
-                }
-                />
+            <Route path="/login" element={<Login />} />
             <Route
                 path="*"
                 element={
