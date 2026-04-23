@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { saveAuth } from "../auth";
 
 // API helper function that constructs full API URLs
 const API = (path: string) => `http://localhost:3001${path}`;
@@ -192,6 +193,8 @@ export default function SignUp() {
         }),
       });
     if (response.ok){
+      const data = await response.json();
+      saveAuth(data.token, data.user);
       console.log("User Created Successfully");
       navigate("/");
     } else{

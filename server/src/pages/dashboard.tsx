@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ExpenseBreakdownChart from "./charts/expense-breakdown";
 import RevenueExpensesChart from "./charts/revenue-expenses-chart";
+import { authFetch } from "../auth";
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -51,8 +52,8 @@ export default function Dashboard() {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/summary`);
-                const monthlyRes = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/monthly`);
+                const response = await authFetch("/dashboard/summary");
+                const monthlyRes = await authFetch("/dashboard/monthly");
                 if (monthlyRes.ok) {
                     const monthlyJson = await monthlyRes.json();
                     setMonthlyData(monthlyJson);

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
+import { authFetch } from "../auth";
 
-const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
+// const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -53,14 +54,14 @@ export default function Journal() {
     const [balanceError, setBalanceError] = useState("");
 
     function fetchRecentEntries() {
-        fetch(API("/entries"))
+        authFetch("/entries")
             .then((r) => r.json())
             .then((data: Entry[]) => setEntries(data))
             .catch(console.error);
     }
 
     useEffect(() => {
-        fetch(API("/account"))
+        authFetch("/account")
             .then((r) => r.json())
             .then((data: Account[]) => setAccounts(data))
             .catch(console.error);
@@ -136,7 +137,7 @@ export default function Journal() {
             const exists = updatedAccounts.find((a) => a.name.toLowerCase() === name.toLowerCase());
             if (!exists) {
                 try {
-                    const response = await fetch(API("/account"), {
+                    const response = await authFetch("/account", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ name }),
@@ -167,7 +168,7 @@ export default function Journal() {
                     );
                     if (matched) {
                         try {
-                            await fetch(API(`/account/${matched.id}/entries`), {
+                            await authFetch(`/account/${matched.id}/entries`, {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({
@@ -200,7 +201,7 @@ export default function Journal() {
 
         for (const line of lines) {
             try {
-                await fetch(API(`/account/${line.accountId}/entries`), {
+                await authFetch(`/account/${line.accountId}/entries`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({

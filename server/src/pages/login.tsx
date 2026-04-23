@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { saveAuth } from "../auth";
 
 type TouchedState = {
     emailOrUsername: boolean;
@@ -82,8 +83,12 @@ export default function Login() {
         setTouched((prev) => ({ ...prev, [field]: true }));
     }
 
-    function handleSubmit(e: FormEvent) {
+    const [serverError, setServerError] = useState("");
+
+    async function handleSubmit(e: FormEvent) {
         e.preventDefault();
+        setServerError("");
+
 
         setTouched({
         emailOrUsername: true,
@@ -94,12 +99,29 @@ export default function Login() {
         return;
         }
 
-        console.log("Login form submitted + fake authentication for now:", {
-        emailOrUsername: emailOrUsername.trim(),
-        password,
-        });
+        try{
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    emailOrUsername: emailOrUsername.trim(),
+                    password,
+                }),
+            });
 
-        navigate("/");
+            if (response.ok) {
+                const data = await response.json();
+                saveAuth(data.token, data.user);
+                console.log("Login Successful");
+                navigate("/");
+            } else {
+                const data = await response.json();
+                console.error("Login Failed:", data.error);
+                setServerError(data.error);
+            }
+        } catch (error) {
+            console.error("An error occurred during login:", error);
+        }
     }
 
     return (
@@ -131,6 +153,11 @@ export default function Login() {
                     <u>Login</u>
                 </b>
                 </p>
+
+                {serverError && (
+                    <div className="authErrorText" style={{ textAlign: "center", marginBottom: "1rem" }}>{serverError}
+                    </div>
+                )}
 
                 <form className="authForm" onSubmit={handleSubmit} noValidate>
                 <div className="authField">
