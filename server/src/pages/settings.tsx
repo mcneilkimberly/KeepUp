@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { ThemePreference } from "../theme";
+import { clearAuth } from "../auth";
+import { useNavigate } from "react-router-dom";
 
 type SettingsProps = {
   themePref: ThemePreference;
@@ -8,6 +10,7 @@ type SettingsProps = {
 
 export default function Settings({ themePref, onThemeChange }: SettingsProps) {
   const currentEmail = "user@example.com"; // TODO: Replace with actual user email
+  const navigate = useNavigate();
   const [preferences, setPreferences] = useState({
     notifications: true,
     autoSave: true,
@@ -20,6 +23,11 @@ export default function Settings({ themePref, onThemeChange }: SettingsProps) {
       [key]: !prev[key],
     }));
   };
+
+  function handleLogout() {
+  clearAuth();
+  navigate("/login");
+}
 
   return (
     <div className="settingsPage">
@@ -129,6 +137,10 @@ export default function Settings({ themePref, onThemeChange }: SettingsProps) {
             />
             <span>Compact View</span>
           </label>
+
+          <button type="button" className="logoutButton" onClick={handleLogout}>
+            Logout
+          </button>
         </div>
       </section>
     </div>

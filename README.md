@@ -95,6 +95,10 @@ Developed as part of a Computer Science Cumulative Undergraduate Experience (CUE
 
 15. **npm run dev**           # run compiled output
 
+16. **npm install jsonwebtoken**
+
+17. **npm install --save-dev @types/jsonwebtoken**
+
 ## Project Goals
 
 **KeepUp is being built with the following long-term goals in mind**:

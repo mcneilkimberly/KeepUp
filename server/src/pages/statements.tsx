@@ -12,9 +12,10 @@
  */
 
 import { useState } from "react";
+import { authFetch } from "../auth";
 
 // API helper function that constructs full API URLs
-const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
+// const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
 
 // ============== TYPES & INTERFACES ==============
 
@@ -152,13 +153,13 @@ export default function Statements() {
         setLoading(true);
         try {
             // 1. Fetch all accounts
-            const accountsResponse = await fetch(API("/account"));
+            const accountsResponse = await authFetch("/account");
             const accounts: Account[] = await accountsResponse.json();
 
             // 2. Fetch entries for each account
             const accountBalancesData: AccountBalance[] = [];
             for (const account of accounts) {
-                const entriesResponse = await fetch(API(`/account/${account.id}/entries`));
+                const entriesResponse = await authFetch(`/account/${account.id}/entries`);
                 const entries: Entry[] = await entriesResponse.json();
 
                 // 3. Filter by date range

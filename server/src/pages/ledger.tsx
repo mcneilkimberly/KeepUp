@@ -12,9 +12,10 @@
  */
 
 import { useState, useEffect } from "react";
+import { authFetch } from "../auth";
 
 // API helper function that constructs full API URLs
-const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
+// const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -451,7 +452,7 @@ export default function Ledger() {
      * Empty dependency array [] means it runs only on mount.
      */
     useEffect(() => {
-        fetch(API("/account"))
+        authFetch("/account")
             .then((r) => r.json())
             .then((data: Account[]) => setAccounts(data))
             .catch(console.error);
@@ -474,7 +475,7 @@ export default function Ledger() {
      */
     useEffect(() => {
         if (!selectedAccount) return;
-        fetch(API(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`))
+        authFetch(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`)
             .then((r) => r.json())
             .then((data: Entry[]) =>
                 setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
@@ -513,7 +514,7 @@ export default function Ledger() {
      */
     // Type suggested by Claude
     function addAccount(name: string, type: string) {
-        fetch(API("/account"), {
+        authFetch("/account", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name,  type}),
@@ -542,7 +543,7 @@ export default function Ledger() {
      */
     function renameAccount(newName: string, newType: string) {
         if (!selectedAccount) return;
-        fetch(API(`/account/${selectedAccount.id}`), {
+        authFetch(`/account/${selectedAccount.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: newName, type: newType }),
@@ -576,7 +577,7 @@ export default function Ledger() {
      */
     function deleteAccount() {
         if (!selectedAccount) return;
-        fetch(API(`/account/${selectedAccount.id}`), { method: "DELETE" }).then(() => {
+        authFetch(`/account/${selectedAccount.id}`, { method: "DELETE" }).then(() => {
             // Remove from accounts list
             setAccounts((prev) => prev.filter((a) => a.id !== selectedAccount.id));
             
@@ -607,13 +608,13 @@ export default function Ledger() {
      */
     function addEntry(entry: Entry) {
         if (!selectedAccount) return;
-        fetch(API(`/account/${selectedAccount.id}/entries`), {
+        authFetch(`/account/${selectedAccount.id}/entries`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(entry),
         }).then(() => {
             // Refetch entries to get them in the correct sort order
-            fetch(API(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`))
+            authFetch(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`)
                 .then((r) => r.json())
                 .then((data: Entry[]) =>
                     setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
@@ -644,7 +645,7 @@ export default function Ledger() {
         
         // Make DELETE request to backend if entry has an ID
         if (entryToDelete?.id) {
-            fetch(API(`/account/${selectedAccount.id}/entries/${entryToDelete.id}`), {
+            authFetch(`/account/${selectedAccount.id}/entries/${entryToDelete.id}`, {
                 method: "DELETE",
             }).catch(console.error);
         }

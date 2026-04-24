@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes, Link, useLocation } from "react-router-dom";
+import { NavLink, Route, Routes, Link, useLocation, Navigate } from "react-router-dom";
 import type { NavLinkRenderProps } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import Dashboard from "./pages/dashboard";
@@ -18,6 +18,7 @@ import {
   storePreference,
 } from "./theme";
 import type { ResolvedTheme, ThemePreference } from "./theme";
+import { isAuthenticated } from "./auth";
 
 function resolveTheme(pref: ThemePreference): ResolvedTheme {
   return pref === "system" ? getSystemTheme() : pref;
@@ -34,6 +35,13 @@ function NavItem({ to, label }: { to: string; label: string }) {
       {label}
     </NavLink>
   );
+}
+
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
 }
 
 export default function App() {
@@ -100,13 +108,13 @@ export default function App() {
       <main className={isAuthPage ? "authMain" : "appMain"}>
         <div className={isAuthPage ? "" : "appContainer"}>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/journal" element={<Journal />} />
-            <Route path="/ledger" element={<Ledger />} />
-            <Route path="/statements" element={<Statements />} />
-            <Route path="/settings" element={<Settings themePref={themePref} onThemeChange={setThemePref} />} />
-            <Route path="/tax-planner" element={<TaxPlanner />} />
-            <Route path="/help" element={<Help />} />
+            <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
+            <Route path="/journal" element={<RequireAuth><Journal /></RequireAuth>} />
+            <Route path="/ledger" element={<RequireAuth><Ledger /></RequireAuth>} />
+            <Route path="/statements" element={<RequireAuth><Statements /></RequireAuth>} />
+            <Route path="/settings" element={<RequireAuth><Settings themePref={themePref} onThemeChange={setThemePref} /></RequireAuth>} />
+            <Route path="/tax-planner" element={<RequireAuth><TaxPlanner /></RequireAuth>} />
+            <Route path="/help" element={<RequireAuth><Help /></RequireAuth>} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
             <Route
