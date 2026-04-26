@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ExpenseBreakdownChart from "./charts/expense-breakdown";
 import RevenueExpensesChart from "./charts/revenue-expenses-chart";
+import type { ResolvedTheme } from "../theme";
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -41,11 +42,18 @@ interface MonthlyDataPoint {
     expenses: number;
 }
 
-export default function Dashboard() {
+interface ExpenseCategory {
+    label: string;
+    amount: number;
+}
+
+export default function Dashboard({ resolvedTheme }: { resolvedTheme: ResolvedTheme }) {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
+    const [expenseData, setExpenseData] = useState<ExpenseCategory[]>([]);
+
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -53,6 +61,11 @@ export default function Dashboard() {
                 setLoading(true);
                 const response = await fetch("http://localhost:3001/dashboard/summary");
                 const monthlyRes = await fetch("http://localhost:3001/dashboard/monthly");
+                const expenseRes = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/expenses`);
+                if (expenseRes.ok) {
+                    const expenseJson = await expenseRes.json();
+                    setExpenseData(expenseJson);
+                }
                 if (monthlyRes.ok) {
                     const monthlyJson = await monthlyRes.json();
                     setMonthlyData(monthlyJson);
@@ -145,18 +158,12 @@ export default function Dashboard() {
             <div className="grid" style={{ marginBottom: 24 }}>
                 <div className="card" style={{ gridColumn: "span 6", minHeight: 300 }}>
                     <h2 className="cardTitle">Revenue vs Expenses</h2>
-                    <RevenueExpensesChart data={monthlyData} />
+                    <RevenueExpensesChart data={monthlyData} resolvedTheme={resolvedTheme} />
                 </div>
 
                 <div className="card" style={{ gridColumn: "span 6", minHeight: 300 }}>
-                    <h2 className="cardTitle">Recent Expense Breakdown</h2>
-                    <ExpenseBreakdownChart
-                        data={
-                            dashboardData?.recentEntries
-                                .filter((e) => e.credit > 0)
-                                .map((e) => ({ label: e.account, amount: e.credit })) ?? []
-                        }
-                    />
+                    <h2 className="cardTitle">Expense Breakdown — {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</h2>
+                    <ExpenseBreakdownChart data={expenseData} resolvedTheme={resolvedTheme} />
                 </div>
             </div>
 

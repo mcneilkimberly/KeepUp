@@ -524,6 +524,30 @@ app.get("/dashboard/monthly", async (req, res) => {
     }
 });
 
+// Expense breakdown for current month
+app.get("/dashboard/expenses", async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                a.name                        AS label,
+                SUM(jl.debit_amount)          AS amount
+            FROM journalLines jl
+            JOIN journalEntries je ON jl.journal_entry_id = je.id
+            JOIN account a         ON jl.account_id = a.id
+            WHERE a.type = 'expense'
+            AND DATE_FORMAT(je.entry_date, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')
+            AND je.is_posted = TRUE
+            GROUP BY a.id, a.name
+            HAVING amount > 0
+            ORDER BY amount DESC
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch expense breakdown" });
+    }
+});
+
 // ============== SERVER STARTUP ==============
 
 /**

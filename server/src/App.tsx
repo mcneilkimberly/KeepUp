@@ -91,7 +91,7 @@ export default function App() {
       <main className="appMain">
         <div className="appContainer">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Dashboard resolvedTheme={resolvedTheme} />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/statements" element={<Statements />} />
