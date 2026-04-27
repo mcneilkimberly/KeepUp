@@ -637,7 +637,7 @@ app.get("/dashboard/monthly", requireAuth, async (req, res) => {
                 DATE_SUB(CURDATE(), INTERVAL 11 MONTH), '%Y-%m-01'
             )
             AND je.is_posted = TRUE
-           AND je.business_id = ?
+            AND je.business_id = ?
             GROUP BY month_sort, month
             ORDER BY month_sort ASC`,
             [businessId]
@@ -649,125 +649,29 @@ app.get("/dashboard/monthly", requireAuth, async (req, res) => {
     }
 });
 
-/** SIGN UP  */
-app.post("/signup", async(req: Request, res: Response) => {
-  const {username, name, email, password} = req.body;
-
-  if (!username || !name || !email || !password) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  // Use a single connection so we can wrap the whole thing in a transaction.
-  // If anything fails partway, nothing gets half-created.
-  const connection = await pool.getConnection();
-
-  try {
-    await connection.beginTransaction();
-    // 1. Hash the password INSIDE the try block
-    const hashedpassword = await bcrypt.hash(password, 10);
-    
-  const [userResult]: any = await connection.query(
-      `INSERT INTO users (username, name, email, password_hash) VALUES (?, ?, ?, ?)`,
-      [username, name, email, hashedpassword]
-    );
-    const newUserId: number = userResult.insertId;
-
-    // 2. Create a business owned by this new user.
-    const businessId = uuidv4();
-    await connection.query(
-      `INSERT INTO business (id, name, business_type, owner_id) VALUES (?, ?, ?, ?)`,
-      [businessId, `${name}'s Business`, "sole_prop", newUserId]
-    );
-
-    // 3. Seed default accounts for this business (moved from getDefaultBusinessId).
-    const [defaultAccountsRows]: any = await connection.query(
-      "SELECT name, type FROM default_Accounts"
-    );
-    if (defaultAccountsRows.length > 0) {
-      const values = defaultAccountsRows.map((acc: any) => [
-        uuidv4(),
-        businessId,
-        acc.name,
-        acc.type,
-      ]);
-      await connection.query(
-        "INSERT INTO account (id, business_id, name, type) VALUES ?",
-        [values]
-      );
+// Expense breakdown for current month
+app.get("/dashboard/expenses", async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                a.name                        AS label,
+                SUM(jl.debit_amount)          AS amount
+            FROM journalLines jl
+            JOIN journalEntries je ON jl.journal_entry_id = je.id
+            JOIN account a         ON jl.account_id = a.id
+            WHERE a.type = 'expense'
+            AND DATE_FORMAT(je.entry_date, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')
+            AND je.is_posted = TRUE
+            GROUP BY a.id, a.name
+            HAVING amount > 0
+            ORDER BY amount DESC
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch expense breakdown" });
     }
-
-    await connection.commit();
-
-    // 4. Sign a JWT and return it alongside the user profile.
-    const token = signToken(newUserId);
-    console.log("Successfully signed up user:", username);
-    res.status(201).json({
-      token,
-      user: { id: newUserId, username, name, email },
-    });
-  } catch (error: any) {
-    await connection.rollback();
-    console.error("Error signing up:", error);
-
-    if (error.code === "ER_DUP_ENTRY") {
-      return res.status(409).json({ error: "Username or email already exists." });
-    }
-    res.status(500).json({ error: "Failed to sign up. Please try again." });
-  } finally {
-    connection.release();
-  }
 });
-
-/** LOGIN
- *
- * Accepts a username OR email plus a password. If the credentials are valid,
- * returns a JWT + the user profile.
- */
-app.post("/login", async (req: Request, res: Response) => {
-  const { emailOrUsername, password } = req.body;
-
-  if (!emailOrUsername || !password) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  try {
-    // Look up a user matching EITHER username OR email.
-    const [users]: any = await pool.query(
-      `SELECT id, username, name, email, password_hash
-       FROM users
-       WHERE username = ? OR email = ?
-       LIMIT 1`,
-      [emailOrUsername, emailOrUsername]
-    );
-
-    if (users.length === 0) {
-      // Generic message so we don't reveal whether an account exists.
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const user = users[0];
-    const passwordMatch = await bcrypt.compare(password, user.password_hash);
-    if (!passwordMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const token = signToken(user.id);
-    console.log("Successfully logged in user:", user.username);
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        email: user.email,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 
 // ============== SERVER STARTUP ==============
 
