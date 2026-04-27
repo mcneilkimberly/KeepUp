@@ -439,7 +439,7 @@ export default function Ledger() {
     useEffect(() => {
         setIsLoading(true);
 
-        fetch(API("/account"))
+        authFetch("/account")
             .then((r) => r.json())
             .then((data: Account[]) => setAccounts(data))
             .catch(console.error)
