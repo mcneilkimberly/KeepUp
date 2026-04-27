@@ -4,8 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { saveAuth } from "../auth";
 
 // API helper function that constructs full API URLs
-const API = (path: string) => `http://localhost:3001${path}`;
-
+const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
 type TouchedState = {
     username: boolean;
     name: boolean;
