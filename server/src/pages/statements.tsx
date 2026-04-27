@@ -71,8 +71,8 @@ export default function Statements() {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
     const [generated, setGenerated] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [accountBalances, setAccountBalances] = useState<AccountBalance[]>([]);
+    const [isGenerating, setIsGenerating] = useState(false);
 
     // ============== HELPER FUNCTIONS ==============
 
@@ -150,7 +150,7 @@ export default function Statements() {
      * 9. Handle any errors
      */
     const handleGenerate = async () => {
-        setLoading(true);
+        setIsGenerating(true);
         try {
             // 1. Fetch all accounts
             const accountsResponse = await authFetch("/account");
@@ -182,7 +182,9 @@ export default function Statements() {
         } catch (error) {
             console.error("Error generating statement:", error);
         } finally {
-            setLoading(false);
+            setTimeout(() => {
+                setIsGenerating(false);
+            }, 1200);
         }
     };
 
@@ -556,13 +558,13 @@ export default function Statements() {
                             className="btn btnPrimary" 
                             type="button" 
                             onClick={handleGenerate}
-                            disabled={loading}
+                            disabled={isGenerating}
                         >
-                            {loading ? "Generating..." : "Generate"}
+                            {isGenerating ? "Generating..." : "Generate"}
                         </button>
                         
                         {/* Export PDF button - disabled until statement is generated */}
-                        <button className="btn" type="button" onClick={handleExportPDF} disabled={!generated || loading}>
+                        <button className="btn" type="button" onClick={handleExportPDF} disabled={!generated || isGenerating}>
                             Export PDF
                         </button>
                     </div>
@@ -574,13 +576,11 @@ export default function Statements() {
 
                 {/* RIGHT PANEL: Statement display */}
                 <div className="card" style={{ gridColumn: "span 8" }}>
-                    {/* Header with title and date range info */}
                     <div className="row" style={{ marginBottom: 10 }}>
                         <h2 className="cardTitle" style={{ margin: 0 }}>
                             {generated ? getStatementTitle() : "Preview"}
                         </h2>
-                        
-                        {/* Pill showing date range of generated statement */}
+
                         {generated && (
                             <span className="pill">
                                 {fromDate && toDate
@@ -590,8 +590,15 @@ export default function Statements() {
                         )}
                     </div>
 
-                    {/* Statement content - either rendered statement or placeholder message */}
-                    {generated ? (
+                    {isGenerating ? (
+                        <>
+                            <div className="skeleton skeleton-line medium" />
+                            <div className="skeleton skeleton-table-row" />
+                            <div className="skeleton skeleton-table-row" />
+                            <div className="skeleton skeleton-table-row" />
+                            <div className="skeleton skeleton-table-row" />
+                        </>
+                    ) : generated ? (
                         getStatementContent()
                     ) : (
                         <p className="muted">Select a statement and click "Generate" to view it here.</p>
