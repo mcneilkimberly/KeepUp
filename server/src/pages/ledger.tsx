@@ -406,6 +406,7 @@ export default function Ledger() {
     // ============== STATE VARIABLES ==============
     
     // List of all accounts from the database
+    const [isLoading, setIsLoading] = useState(true);
     const [accounts, setAccounts] = useState<Account[]>([]);
     
     /**
@@ -435,28 +436,21 @@ export default function Ledger() {
     // Sort order for entries - tracks which filter/sort is currently applied
     const [sortOrder, setSortOrder] = useState<"date-newest" | "date-oldest" | "amount-high" | "amount-low">("date-newest");
 
-    // ============== EFFECTS ==============
-
-    /**
-     * useEffect: Fetch accounts on component mount
-     * 
-     * Runs once when the page loads.
-     * Retrieves all accounts from the backend and populates the sidebar list.
-     * 
-     * Steps:
-     * 1. Calls GET /account endpoint
-     * 2. Parses JSON response
-     * 3. Sets accounts state with the returned data
-     * 4. Catches any errors and logs them
-     * 
-     * Empty dependency array [] means it runs only on mount.
-     */
     useEffect(() => {
+        setIsLoading(true);
+
         authFetch("/account")
             .then((r) => r.json())
             .then((data: Account[]) => setAccounts(data))
-            .catch(console.error);
+            .catch(console.error)
+            .finally(() => {
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, 1200);
+            });
     }, []);
+
+    // ============== EFFECTS ==============
 
     /**
      * useEffect: Fetch entries when selected account changes or sort order changes
@@ -473,15 +467,15 @@ export default function Ledger() {
      * 
      * Dependency: [selectedAccount, sortOrder]
      */
-    useEffect(() => {
-        if (!selectedAccount) return;
-        authFetch(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`)
-            .then((r) => r.json())
-            .then((data: Entry[]) =>
-                setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
-            )
-            .catch(console.error);
-    }, [selectedAccount, sortOrder]);
+    // useEffect(() => {
+    //     if (!selectedAccount) return;
+    //     authFetch(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`)
+    //         .then((r) => r.json())
+    //         .then((data: Entry[]) =>
+    //             setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
+    //         )
+    //         .catch(console.error);
+    // }, [selectedAccount, sortOrder]);
 
     /**
      * useEffect: Clear entry selection when account changes
@@ -769,18 +763,26 @@ export default function Ledger() {
 
                     {/* Account list - each account is clickable */}
                     <div style={{ display: "grid", gap: 8 }}>
-                        {/**Accounts are sorted alphabetically */}
-                        {[...accounts].sort((a, b) => a.name.localeCompare(b.name)).map((acct) => (
-                            <button
-                                key={acct.id}
-                                className="btn"
-                                type="button"
-                                style={{ textAlign: "left" }}
-                                onClick={() => setSelectedAccount(acct)}
-                            >
-                                {acct.name}
-                            </button>
-                        ))}
+                        {isLoading ? (
+                            <>
+                                <div className="skeleton skeleton-button" />
+                                <div className="skeleton skeleton-button" />
+                                <div className="skeleton skeleton-button" />
+                                <div className="skeleton skeleton-button" />
+                            </>
+                        ) : (
+                            [...accounts].sort((a, b) => a.name.localeCompare(b.name)).map((acct) => (
+                                <button
+                                    key={acct.id}
+                                    className="btn"
+                                    type="button"
+                                    style={{ textAlign: "left" }}
+                                    onClick={() => setSelectedAccount(acct)}
+                                >
+                                    {acct.name}
+                                </button>
+                            ))
+                        )}
                     </div>
                     
                     {/* Modals - only render when active */}
@@ -853,9 +855,9 @@ export default function Ledger() {
                                 onChange={(e) => setSortOrder(e.target.value as "date-newest" | "date-oldest" | "amount-high" | "amount-low")}
                                 style={{ width: 220 }}
                             >
-                                <option value="date-newest">Date (decending)</option>
+                                <option value="date-newest">Date (descending)</option>
                                 <option value="date-oldest">Date (ascending)</option>
-                                <option value="amount-high">Amount (decending)</option>
+                                <option value="amount-high">Amount (descending)</option>
                                 <option value="amount-low">Amount (ascending)</option>
                             </select>
                             
@@ -910,10 +912,36 @@ export default function Ledger() {
                             </tr>
                         </thead>
                         <tbody>
-                            {selectedAccount ? (
-                                // If account is selected, show its entries
+                            {isLoading ? (
+                                <>
+                                    <tr>
+                                        <td colSpan={5}>
+                                            <div className="skeleton skeleton-table-row" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan={5}>
+                                            <div className="skeleton skeleton-table-row" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan={5}>
+                                            <div className="skeleton skeleton-table-row" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan={5}>
+                                            <div className="skeleton skeleton-table-row" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan={5}>
+                                            <div className="skeleton skeleton-table-row" />
+                                        </td>
+                                    </tr>
+                                </>
+                            ) : selectedAccount ? (
                                 (entries[selectedAccount.id] || []).length ? (
-                                    // If account has entries, display each one (already sorted from backend)
                                     (entries[selectedAccount.id] || []).map((e, idx) => (
                                         <tr
                                             key={idx}
@@ -931,11 +959,10 @@ export default function Ledger() {
                                             <td>{e.description}</td>
                                             <td>{e.debit}</td>
                                             <td>{e.credit}</td>
-                                            <td className="muted">—</td> {/* Balance column: placeholder for future */}
+                                            <td className="muted">—</td>
                                         </tr>
                                     ))
                                 ) : (
-                                    // If account has no entries, show empty state message
                                     <tr>
                                         <td colSpan={5} className="muted" style={{ textAlign: "center" }}>
                                             No entries for {selectedAccount.name}
@@ -943,7 +970,6 @@ export default function Ledger() {
                                     </tr>
                                 )
                             ) : (
-                                // If no account selected, show placeholder row
                                 <tr>
                                     <td className="muted">—</td>
                                     <td className="muted">No account selected</td>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { authFetch } from "../auth";
 
-// const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
+const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -52,20 +52,34 @@ export default function Journal() {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [entries, setEntries] = useState<Entry[]>([]);
     const [balanceError, setBalanceError] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
 
-    function fetchRecentEntries() {
-        authFetch("/entries")
-            .then((r) => r.json())
-            .then((data: Entry[]) => setEntries(data))
-            .catch(console.error);
+    async function fetchRecentEntries() {
+        const response = await fetch(API("/entries"));
+        const data: Entry[] = await response.json();
+        setEntries(data);
     }
 
     useEffect(() => {
-        authFetch("/account")
-            .then((r) => r.json())
-            .then((data: Account[]) => setAccounts(data))
-            .catch(console.error);
-        fetchRecentEntries();
+        const loadJournalData = async () => {
+            try {
+                setIsLoading(true);
+
+                const accountsResponse = await fetch(API("/account"));
+                const accountsData: Account[] = await accountsResponse.json();
+                setAccounts(accountsData);
+
+                await fetchRecentEntries();
+            } catch (error) {
+                console.error("Error loading journal data:", error);
+            } finally {
+                setTimeout(() => {
+                    setIsLoading(false);
+                }, 1200);
+            }
+        };
+
+        loadJournalData();
     }, []);
 
     // ── Line helpers ──────────────────────────────────────────────
@@ -268,9 +282,13 @@ export default function Journal() {
                                     onChange={(e) => updateLine(idx, "accountId", e.target.value)}
                                 >
                                     <option value="" disabled>Account…</option>
-                                    {accounts.map((acct) => (
+                                    {isLoading ? (
+                                    <option value="">Loading accounts...</option>
+                                ) : (
+                                    accounts.map((acct) => (
                                         <option key={acct.id} value={acct.id}>{acct.name}</option>
-                                    ))}
+                                    ))
+                                )}
                                 </select>
                                 <input
                                     className="input"
@@ -372,7 +390,35 @@ export default function Journal() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {entries.length ? (
+                                {isLoading ? (
+                                    <>
+                                        <tr>
+                                            <td colSpan={5}>
+                                                <div className="skeleton skeleton-table-row" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan={5}>
+                                                <div className="skeleton skeleton-table-row" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan={5}>
+                                                <div className="skeleton skeleton-table-row" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan={5}>
+                                                <div className="skeleton skeleton-table-row" />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colSpan={5}>
+                                                <div className="skeleton skeleton-table-row" />
+                                            </td>
+                                        </tr>
+                                    </>
+                                ) : entries.length ? (
                                     entries.map((entry, idx) => (
                                         <tr key={idx}>
                                             <td style={{ color: "var(--text-muted)", fontSize: 13 }}>{formatDate(entry.date)}</td>

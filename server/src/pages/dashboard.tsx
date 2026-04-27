@@ -81,7 +81,9 @@ export default function Dashboard({ resolvedTheme }: { resolvedTheme: ResolvedTh
                 setError(err instanceof Error ? err.message : "Unknown error");
                 setDashboardData(null);
             } finally {
-                setLoading(false);
+                setTimeout(() => {
+                    setLoading(false);
+                }, 1200);
             }
             
         };
@@ -128,43 +130,64 @@ export default function Dashboard({ resolvedTheme }: { resolvedTheme: ResolvedTh
                 <div className="card" style={{ gridColumn: "span 3" }}>
                     <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>Total Revenue</div>
                     <div className="kpiValue">
-                        {loading ? "—" : formatLargeCurrency(dashboardData?.totalIncome || 0)}
+                        {loading ? <div className="skeleton skeleton-value" /> : formatLargeCurrency(dashboardData?.totalIncome || 0)}
                     </div>
                 </div>
 
                 <div className="card" style={{ gridColumn: "span 3" }}>
                     <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>Net Income</div>
                     <div className="kpiValue">
-                        {loading ? "—" : formatLargeCurrency((dashboardData?.totalIncome || 0) - (dashboardData?.totalSpending || 0))}
+                        {loading ? (
+                            <div className="skeleton skeleton-value" />
+                        ) : (
+                            formatLargeCurrency((dashboardData?.totalIncome || 0) - (dashboardData?.totalSpending || 0))
+                        )}
                     </div>
                 </div>
 
                 <div className="card" style={{ gridColumn: "span 3" }}>
                     <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>Total Expenses</div>
                     <div className="kpiValue">
-                        {loading ? "—" : formatLargeCurrency(dashboardData?.totalSpending || 0)}
+                        {loading ? <div className="skeleton skeleton-value" /> : formatLargeCurrency(dashboardData?.totalSpending || 0)}
                     </div>
                 </div>
 
                 <div className="card" style={{ gridColumn: "span 3" }}>
                     <div className="muted" style={{ fontSize: 13, marginBottom: 8 }}>Cash Flow</div>
                     <div className="kpiValue">
-                        {loading ? "—" : formatLargeCurrency((dashboardData?.totalIncome || 0) * 0.25)}
+                        {loading ? <div className="skeleton skeleton-value" /> : formatLargeCurrency((dashboardData?.totalIncome || 0) * 0.25)}
                     </div>
                 </div>
             </div>
 
             {/* Charts Section */}
-            <div className="grid" style={{ marginBottom: 24 }}>
-                <div className="card" style={{ gridColumn: "span 6", minHeight: 300 }}>
-                    <h2 className="cardTitle">Revenue vs Expenses</h2>
-                    <RevenueExpensesChart data={monthlyData} resolvedTheme={resolvedTheme} />
-                </div>
+            <div className="card" style={{ gridColumn: "span 6", minHeight: loading ? 300 : "auto", marginBottom: 24}}>
+                <h2 className="cardTitle">Revenue vs Expenses</h2>
+                {loading ? (
+                <div className="skeleton skeleton-chart" />
+                ) : monthlyData.length > 0 ? (
+                <RevenueExpensesChart data={monthlyData} />
+                ) : (
+                <p className="muted">No revenue or expense data yet.</p>
+                )}
+            </div>
 
-                <div className="card" style={{ gridColumn: "span 6", minHeight: 300 }}>
-                    <h2 className="cardTitle">Expense Breakdown — {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</h2>
-                    <ExpenseBreakdownChart data={expenseData} resolvedTheme={resolvedTheme} />
-                </div>
+            <div className="card" style={{ gridColumn: "span 6", minHeight: loading ? 300 : "auto", marginBottom: 24}}>
+                <h2 className="cardTitle">Recent Expense Breakdown</h2>
+                {loading ? (
+                    <div className="skeleton skeleton-chart" />
+                    ) : dashboardData?.recentEntries &&
+                    dashboardData.recentEntries.filter((e) => e.credit > 0).length > 0 ? (
+                    <ExpenseBreakdownChart
+                        data={
+                        dashboardData.recentEntries
+                            .filter((e) => e.credit > 0)
+                            .map((e) => ({ label: e.account, amount: e.credit }))
+                        }
+                    />
+                    ) : (
+                    <p className="muted">No expense data yet.</p>
+                )}
             </div>
 
             {/* Recent Transactions Section */}
@@ -172,9 +195,15 @@ export default function Dashboard({ resolvedTheme }: { resolvedTheme: ResolvedTh
                 <h2 className="cardTitle">Recent Transactions</h2>
                 
                 {error ? (
-                    <p className="muted">Error loading entries: {error}</p>
+                    <p className="muted">Dashboard data is not available yet.</p>
                 ) : loading ? (
-                    <p className="muted">Loading entries...</p>
+                <div style={{ display: "grid", gap: 12 }}>
+                    <div className="skeleton skeleton-table-row" />
+                    <div className="skeleton skeleton-table-row" />
+                    <div className="skeleton skeleton-table-row" />
+                    <div className="skeleton skeleton-table-row" />
+                    <div className="skeleton skeleton-table-row" />
+                </div>
                 ) : dashboardData?.recentEntries && dashboardData.recentEntries.length > 0 ? (
                     <div style={{ display: "grid", gap: 12 }}>
                         {dashboardData.recentEntries.slice(0, 5).map((entry, idx) => (
