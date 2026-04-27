@@ -109,11 +109,21 @@ export default function App() {
         <div className={isAuthPage ? "" : "appContainer"}>
           <Routes>
             <Route path="/" element={<Dashboard resolvedTheme={resolvedTheme} />} />
+            <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/ledger" element={<Ledger />} />
             <Route path="/statements" element={<Statements />} />
             <Route path="/tax-planner" element={<TaxPlanner />} />
             <Route path="/help" element={<Help />} />
+            <Route
+              path="/settings"
+              element={
+                <RequireAuth>
+                  <Settings themePref={themePref} onThemeChange={setThemePref} />
+                </RequireAuth>
+              }
+            />
             <Route
                 path="*"
                 element={
