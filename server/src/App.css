@@ -561,6 +561,22 @@
     flex-shrink: 0;
 }
 
+.logoutButton {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    margin-top: 12px;
+}
+
+.logoutButton:hover {
+    background: var(--accent-hover);
+}
+
 .taxPlannerPage {
     width: 100%;
 }

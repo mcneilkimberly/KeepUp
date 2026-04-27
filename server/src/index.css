@@ -20,6 +20,9 @@
     --btn-bg: rgba(0, 0, 0, 0.05);
     --btn-bg-hover: rgba(0, 0, 0, 0.08);
 
+    --accent: rgb(66, 133, 244);
+    --accent-hover: rgb(51, 103, 214);
+
     --focus: rgba(0, 0, 0, 0.35);
 
     font-synthesis: none;
@@ -46,6 +49,9 @@
 
     --btn-bg: rgba(255, 255, 255, 0.06);
     --btn-bg-hover: rgba(255, 255, 255, 0.10);
+
+    --accent: rgb(100, 181, 246);
+    --accent-hover: rgb(66, 165, 245);
 
     --focus: rgba(255, 255, 255, 0.35);
 }
