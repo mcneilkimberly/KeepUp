@@ -166,27 +166,21 @@ export default function Dashboard({ resolvedTheme }: { resolvedTheme: ResolvedTh
                 {loading ? (
                 <div className="skeleton skeleton-chart" />
                 ) : monthlyData.length > 0 ? (
-                <RevenueExpensesChart data={monthlyData} />
+                <RevenueExpensesChart data={monthlyData} resolvedTheme={resolvedTheme} />
                 ) : (
                 <p className="muted">No revenue or expense data yet.</p>
                 )}
             </div>
 
             <div className="card" style={{ gridColumn: "span 6", minHeight: loading ? 300 : "auto", marginBottom: 24}}>
-                <h2 className="cardTitle">Recent Expense Breakdown</h2>
+                <h2 className="cardTitle">Expense Breakdown — {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}</h2>
                 {loading ? (
                     <div className="skeleton skeleton-chart" />
-                    ) : dashboardData?.recentEntries &&
-                    dashboardData.recentEntries.filter((e) => e.credit > 0).length > 0 ? (
+                ) : (
                     <ExpenseBreakdownChart
-                        data={
-                        dashboardData.recentEntries
-                            .filter((e) => e.credit > 0)
-                            .map((e) => ({ label: e.account, amount: e.credit }))
-                        }
+                        data={expenseData}
+                        resolvedTheme={resolvedTheme}
                     />
-                    ) : (
-                    <p className="muted">No expense data yet.</p>
                 )}
             </div>
 

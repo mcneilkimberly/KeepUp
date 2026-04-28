@@ -7,9 +7,6 @@ import Ledger from "./pages/ledger";
 import Statements from "./pages/statements";
 import TaxPlanner from "./pages/tax-planner";
 import Help from "./pages/help";
-import SignUp from "./pages/sign-up";
-import Login from "./pages/login";
-import Settings from "./pages/settings";
 import "./App.css";
 import {
   applyResolvedTheme,
@@ -18,7 +15,6 @@ import {
   storePreference,
 } from "./theme";
 import type { ResolvedTheme, ThemePreference } from "./theme";
-import { isAuthenticated } from "./auth";
 
 function resolveTheme(pref: ThemePreference): ResolvedTheme {
   return pref === "system" ? getSystemTheme() : pref;
@@ -37,12 +33,6 @@ function NavItem({ to, label }: { to: string; label: string }) {
   );
 }
 
-function RequireAuth({ children }: { children: React.ReactNode }) {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
-}
 
 export default function App() {
   const location = useLocation();
