@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { authFetch } from "../auth";
 
-const API = (path: string) => `${import.meta.env.VITE_API_URL}${path}`;
-
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
  * @param dateString Date in "YYYY-MM-DD" format
@@ -55,7 +53,7 @@ export default function Journal() {
     const [isLoading, setIsLoading] = useState(true);
 
     async function fetchRecentEntries() {
-        const response = await fetch(API("/entries"));
+        const response = await authFetch("/entries");
         const data: Entry[] = await response.json();
         setEntries(data);
     }
@@ -65,7 +63,7 @@ export default function Journal() {
             try {
                 setIsLoading(true);
 
-                const accountsResponse = await fetch(API("/account"));
+                const accountsResponse = await authFetch("/account");
                 const accountsData: Account[] = await accountsResponse.json();
                 setAccounts(accountsData);
 
