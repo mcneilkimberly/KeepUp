@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import ExpenseBreakdownChart from "./charts/expense-breakdown";
 import RevenueExpensesChart from "./charts/revenue-expenses-chart";
-import type { ResolvedTheme } from "../theme";
+import { authFetch } from "../auth";
 
 /**
  * Formats a date string from "YYYY-MM-DD" to "Month Day, Year" format
@@ -42,30 +42,18 @@ interface MonthlyDataPoint {
     expenses: number;
 }
 
-interface ExpenseCategory {
-    label: string;
-    amount: number;
-}
-
-export default function Dashboard({ resolvedTheme }: { resolvedTheme: ResolvedTheme }) {
+export default function Dashboard() {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
-    const [expenseData, setExpenseData] = useState<ExpenseCategory[]>([]);
-
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch("http://localhost:3001/dashboard/summary");
-                const monthlyRes = await fetch("http://localhost:3001/dashboard/monthly");
-                const expenseRes = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/expenses`);
-                if (expenseRes.ok) {
-                    const expenseJson = await expenseRes.json();
-                    setExpenseData(expenseJson);
-                }
+                const response = await authFetch("/dashboard/summary");
+                const monthlyRes = await authFetch("/dashboard/monthly");
                 if (monthlyRes.ok) {
                     const monthlyJson = await monthlyRes.json();
                     setMonthlyData(monthlyJson);

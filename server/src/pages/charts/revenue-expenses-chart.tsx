@@ -31,23 +31,18 @@ interface MonthlyDataPoint {
 
 interface RevenueExpensesChartProps {
     data: MonthlyDataPoint[];
-    resolvedTheme: "light" | "dark";
 }
 
-export default function RevenueExpensesChart({ data, resolvedTheme }: RevenueExpensesChartProps) {
+export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
 
     useEffect(() => {
         if (!canvasRef.current || data.length === 0) return;
-        if (chartRef.current) chartRef.current.destroy();
 
-        // Swap label/grid colors based on theme. Light mode uses dark ink,
-        // dark mode uses the muted white your CSS variables already define.
-        const isDark = resolvedTheme === "dark";
-        const labelColor   = isDark ? "rgba(255,255,255,0.68)" : "rgba(20,20,20,0.68)";
-        const gridColor    = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)";
-        const currentColor = isDark ? "#ffffff" : "#141414";
+        if (chartRef.current) {
+            chartRef.current.destroy();
+        }
 
         const currentMonthLabel = new Date().toLocaleDateString("en-US", {
             month: "short",
@@ -101,7 +96,7 @@ export default function RevenueExpensesChart({ data, resolvedTheme }: RevenueExp
                         display: true,
                         position: "top",
                         labels: {
-                            color: labelColor,   // theme-aware
+                            color: "#9ca3af",
                             font: { size: 12 },
                             boxWidth: 12,
                         },
@@ -115,9 +110,9 @@ export default function RevenueExpensesChart({ data, resolvedTheme }: RevenueExp
                                     : label;
                             },
                             label: (ctx) => {
-                                if (ctx.parsed.y === null) return "";
-                                return ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
-                            },
+                              if (ctx.parsed.y === null) return "";
+                              return ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
+                          },
                         },
                     },
                 },
@@ -127,7 +122,7 @@ export default function RevenueExpensesChart({ data, resolvedTheme }: RevenueExp
                         ticks: {
                             color: (ctx) => {
                                 const label = data[ctx.index]?.month;
-                                return label === currentMonthLabel ? currentColor : labelColor; // theme-aware
+                                return label === currentMonthLabel ? "#ffffff" : "#9ca3af";
                             },
                             font: (ctx) => {
                                 const label = data[ctx.index]?.month;
@@ -138,9 +133,9 @@ export default function RevenueExpensesChart({ data, resolvedTheme }: RevenueExp
                         },
                     },
                     y: {
-                        grid: { color: gridColor },     // theme-aware
+                        grid: { color: "rgba(255,255,255,0.06)" },
                         ticks: {
-                            color: labelColor,          // theme-aware
+                            color: "#9ca3af",
                             font: { size: 11 },
                             callback: (v) => "$" + (Number(v) / 1000).toFixed(0) + "k",
                         },
@@ -152,7 +147,7 @@ export default function RevenueExpensesChart({ data, resolvedTheme }: RevenueExp
         return () => {
             chartRef.current?.destroy();
         };
-    }, [data, resolvedTheme]);
+    }, [data]);
 
     return (
         <div style={{ position: "relative", width: "100%", height: "240px" }}>

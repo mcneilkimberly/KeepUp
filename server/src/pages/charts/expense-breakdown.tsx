@@ -9,14 +9,13 @@ import {
 
 Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
-export interface ExpenseCategory {
+interface ExpenseCategory {
     label: string;
     amount: number;
 }
 
 interface ExpenseBreakdownChartProps {
     data: ExpenseCategory[];
-    resolvedTheme: "light" | "dark";
 }
 
 const COLORS = [
@@ -30,23 +29,16 @@ const COLORS = [
     "#D4537E",
 ];
 
-export default function ExpenseBreakdownChart({ data, resolvedTheme }: ExpenseBreakdownChartProps) {
+export default function ExpenseBreakdownChart({ data }: ExpenseBreakdownChartProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
 
     useEffect(() => {
-        if (!canvasRef.current) return;
+        if (!canvasRef.current || data.length === 0) return;
 
         if (chartRef.current) {
             chartRef.current.destroy();
         }
-
-        // If there's no data yet, don't render a broken chart
-        if (data.length === 0) return;
-
-        // Match your CSS variables — same logic as RevenueExpensesChart
-        const isDark = resolvedTheme === "dark";
-        const labelColor = isDark ? "rgba(255,255,255,0.68)" : "rgba(20,20,20,0.68)";
 
         const total = data.reduce((sum, d) => sum + d.amount, 0);
 
@@ -72,7 +64,7 @@ export default function ExpenseBreakdownChart({ data, resolvedTheme }: ExpenseBr
                         display: true,
                         position: "bottom",
                         labels: {
-                            color: labelColor,      // theme-aware
+                            color: "#9ca3af",
                             font: { size: 11 },
                             boxWidth: 10,
                             padding: 14,
@@ -95,24 +87,11 @@ export default function ExpenseBreakdownChart({ data, resolvedTheme }: ExpenseBr
         return () => {
             chartRef.current?.destroy();
         };
-    }, [data, resolvedTheme]); // redraw when theme or data changes
-
-    // Show a friendly message instead of an empty canvas when there's no data
-    if (data.length === 0) {
-        return (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "240px" }}>
-                <p className="muted">No expense accounts recorded this month.</p>
-            </div>
-        );
-    }
+    }, [data]);
 
     return (
         <div style={{ position: "relative", width: "100%", height: "240px" }}>
-            <canvas
-                ref={canvasRef}
-                role="img"
-                aria-label="Doughnut chart of expense breakdown by account for the current month"
-            />
+            <canvas ref={canvasRef} role="img" aria-label="Doughnut chart of expense breakdown by category" />
         </div>
     );
 }
