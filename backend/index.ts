@@ -676,6 +676,42 @@ app.get("/dashboard/expenses", requireAuth, async (req, res) => {
     }
 });
 
+app.get("/dashboard/ratios", requireAuth, async (req, res) => {
+    try {
+        const businessId = await getBusinessIdForUser(req.userId!);
+
+        const [rows]: any = await pool.query(`
+            SELECT
+                a.type,
+                SUM(jl.debit_amount)  AS total_debit,
+                SUM(jl.credit_amount) AS total_credit
+            FROM journalLines jl
+            JOIN journalEntries je ON jl.journal_entry_id = je.id
+            JOIN account a         ON jl.account_id = a.id
+            WHERE je.business_id = ?
+            GROUP BY a.type
+        `, [businessId]);
+
+        const get = (type: string, side: "debit" | "credit") => {
+            const row = rows.find((r: any) => r.type === type);
+            if (!row) return 0;
+            return parseFloat(side === "debit" ? row.total_debit : row.total_credit) || 0;
+        };
+
+        const revenue   = get("revenue",   "credit");
+        const expenses  = get("expense",   "debit");
+        const assets    = get("asset",     "debit");
+        const liabilities = get("liability", "credit");
+        const equity    = get("equity",    "credit");
+        const netIncome = revenue - expenses;
+
+        res.json({ revenue, expenses, assets, liabilities, equity, netIncome });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch ratios" });
+    }
+});
+
 /** SIGN UP  */
 app.post("/signup", async(req: Request, res: Response) => {
   const {username, name, email, password} = req.body;
