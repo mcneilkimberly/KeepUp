@@ -31,9 +31,10 @@ interface MonthlyDataPoint {
 
 interface RevenueExpensesChartProps {
     data: MonthlyDataPoint[];
+    resolvedTheme: "light" | "dark";
 }
 
-export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps) {
+export default function RevenueExpensesChart({ data, resolvedTheme }: RevenueExpensesChartProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
 
@@ -43,6 +44,11 @@ export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps
         if (chartRef.current) {
             chartRef.current.destroy();
         }
+
+        const isDark = resolvedTheme === "dark";
+        const labelColor   = isDark ? "rgba(255,255,255,0.68)" : "rgba(20,20,20,0.68)";
+        const gridColor    = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)";
+        const currentColor = isDark ? "#ffffff" : "#141414";
 
         const currentMonthLabel = new Date().toLocaleDateString("en-US", {
             month: "short",
@@ -96,7 +102,7 @@ export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps
                         display: true,
                         position: "top",
                         labels: {
-                            color: "#9ca3af",
+                            color: labelColor,
                             font: { size: 12 },
                             boxWidth: 12,
                         },
@@ -110,9 +116,9 @@ export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps
                                     : label;
                             },
                             label: (ctx) => {
-                              if (ctx.parsed.y === null) return "";
-                              return ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
-                          },
+                                if (ctx.parsed.y === null) return "";
+                                return ` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`;
+                            },
                         },
                     },
                 },
@@ -122,7 +128,7 @@ export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps
                         ticks: {
                             color: (ctx) => {
                                 const label = data[ctx.index]?.month;
-                                return label === currentMonthLabel ? "#ffffff" : "#9ca3af";
+                                return label === currentMonthLabel ? currentColor : labelColor;
                             },
                             font: (ctx) => {
                                 const label = data[ctx.index]?.month;
@@ -133,11 +139,16 @@ export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps
                         },
                     },
                     y: {
-                        grid: { color: "rgba(255,255,255,0.06)" },
+                        grid: { color: gridColor },
                         ticks: {
-                            color: "#9ca3af",
+                            color: labelColor,
                             font: { size: 11 },
-                            callback: (v) => "$" + (Number(v) / 1000).toFixed(0) + "k",
+                            callback: (v) => {
+                                const num = Number(v);
+                                if (num >= 1_000_000) return "$" + (num / 1_000_000).toFixed(1) + "M";
+                                if (num >= 1_000) return "$" + (num / 1_000).toFixed(1) + "k";
+                                return "$" + num.toFixed(0);
+                            },
                         },
                     },
                 },
@@ -147,7 +158,7 @@ export default function RevenueExpensesChart({ data }: RevenueExpensesChartProps
         return () => {
             chartRef.current?.destroy();
         };
-    }, [data]);
+    }, [data, resolvedTheme]);
 
     return (
         <div style={{ position: "relative", width: "100%", height: "240px" }}>

@@ -16,6 +16,7 @@ interface ExpenseCategory {
 
 interface ExpenseBreakdownChartProps {
     data: ExpenseCategory[];
+    resolvedTheme: "light" | "dark";
 }
 
 const COLORS = [
@@ -29,16 +30,21 @@ const COLORS = [
     "#D4537E",
 ];
 
-export default function ExpenseBreakdownChart({ data }: ExpenseBreakdownChartProps) {
+export default function ExpenseBreakdownChart({ data, resolvedTheme }: ExpenseBreakdownChartProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const chartRef = useRef<Chart | null>(null);
 
     useEffect(() => {
-        if (!canvasRef.current || data.length === 0) return;
+        if (!canvasRef.current) return;
 
         if (chartRef.current) {
             chartRef.current.destroy();
         }
+
+        if (data.length === 0) return;
+
+        const isDark = resolvedTheme === "dark";
+        const labelColor = isDark ? "rgba(255,255,255,0.68)" : "rgba(20,20,20,0.68)";
 
         const total = data.reduce((sum, d) => sum + d.amount, 0);
 
@@ -64,7 +70,7 @@ export default function ExpenseBreakdownChart({ data }: ExpenseBreakdownChartPro
                         display: true,
                         position: "bottom",
                         labels: {
-                            color: "#9ca3af",
+                            color: labelColor,
                             font: { size: 11 },
                             boxWidth: 10,
                             padding: 14,
@@ -87,7 +93,15 @@ export default function ExpenseBreakdownChart({ data }: ExpenseBreakdownChartPro
         return () => {
             chartRef.current?.destroy();
         };
-    }, [data]);
+    }, [data, resolvedTheme]);
+
+    if (data.length === 0) {
+        return (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "240px" }}>
+                <p className="muted">No expense accounts recorded this month.</p>
+            </div>
+        );
+    }
 
     return (
         <div style={{ position: "relative", width: "100%", height: "240px" }}>
