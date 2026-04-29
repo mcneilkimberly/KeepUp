@@ -379,12 +379,13 @@ app.delete("/account/:id", requireAuth, async (req: Request, res: Response) => {
  *   { id: 2, date: "2026-03-17", description: "Client payment", debit: "0.00", credit: "500.00" }
  * ]
  */
-app.get("/entries", requireAuth,async (req: Request, res: Response) => {
+app.get("/entries", requireAuth, async (req: Request, res: Response) => {
   const businessId = await getBusinessIdForUser(req.userId!);
   const [rows] = await pool.query(
-    `SELECT l.id, e.entry_date as date, e.description, l.debit_amount as debit, l.credit_amount as credit 
+    `SELECT l.id, e.entry_date as date, e.description, a.name as accountName, l.debit_amount as debit, l.credit_amount as credit 
      FROM journalLines l
      JOIN journalEntries e ON l.journal_entry_id = e.id
+     JOIN account a ON l.account_id = a.id
      WHERE e.business_id = ?
      ORDER BY e.entry_date DESC`,
     [businessId]
