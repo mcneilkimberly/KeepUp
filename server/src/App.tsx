@@ -10,6 +10,7 @@ import Help from "./pages/help";
 import SignUp from "./pages/sign-up";
 import Login from "./pages/login";
 import Settings from "./pages/settings";
+import BusinessRatios from "./pages/business-ratios";
 import "./App.css";
 import {
   applyResolvedTheme,
@@ -19,6 +20,7 @@ import {
 } from "./theme";
 import type { ResolvedTheme, ThemePreference } from "./theme";
 import { isAuthenticated } from "./auth";
+
 
 function resolveTheme(pref: ThemePreference): ResolvedTheme {
   return pref === "system" ? getSystemTheme() : pref;
@@ -96,6 +98,7 @@ export default function App() {
               <NavItem to="/ledger" label="Ledger" />
               <NavItem to="/statements" label="Statements" />
               <NavItem to="/tax-planner" label="Tax Planner" />
+              <NavItem to="/ratios" label="Ratios" />
               <NavItem to="/help" label="Help" />
             </nav>
 
@@ -114,6 +117,7 @@ export default function App() {
             <Route path="/statements" element={<RequireAuth><Statements /></RequireAuth>} />
             <Route path="/settings" element={<RequireAuth><Settings themePref={themePref} onThemeChange={setThemePref} /></RequireAuth>} />
             <Route path="/tax-planner" element={<RequireAuth><TaxPlanner /></RequireAuth>} />
+            <Route path="/ratios" element={<RequireAuth><BusinessRatios /></RequireAuth>} />
             <Route path="/help" element={<RequireAuth><Help /></RequireAuth>} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
