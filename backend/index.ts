@@ -649,6 +649,32 @@ app.get("/dashboard/monthly", requireAuth, async (req, res) => {
     }
 });
 
+/** Returns a breakdown of expenses by category for the current month. */
+app.get("/dashboard/expenses", requireAuth, async (req, res) => {
+    try {
+        const businessId = await getBusinessIdForUser(req.userId!);
+        const [rows] = await pool.query(`
+            SELECT
+                a.name                        AS label,
+                SUM(jl.debit_amount)          AS amount
+            FROM journalLines jl
+            JOIN journalEntries je ON jl.journal_entry_id = je.id
+            JOIN account a         ON jl.account_id = a.id
+            WHERE a.type = 'expense'
+            AND DATE_FORMAT(je.entry_date, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')
+            AND je.is_posted = TRUE
+            AND je.business_id = ?
+            GROUP BY a.id, a.name
+            HAVING amount > 0
+            ORDER BY amount DESC
+        `, [businessId]);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch expense breakdown" });
+    }
+});
+
 /** SIGN UP  */
 app.post("/signup", async(req: Request, res: Response) => {
   const {username, name, email, password} = req.body;

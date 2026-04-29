@@ -108,7 +108,7 @@ export default function App() {
       <main className={isAuthPage ? "authMain" : "appMain"}>
         <div className={isAuthPage ? "" : "appContainer"}>
           <Routes>
-            <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
+            <Route path="/" element={<RequireAuth><Dashboard resolvedTheme={resolvedTheme} /></RequireAuth>} />
             <Route path="/journal" element={<RequireAuth><Journal /></RequireAuth>} />
             <Route path="/ledger" element={<RequireAuth><Ledger /></RequireAuth>} />
             <Route path="/statements" element={<RequireAuth><Statements /></RequireAuth>} />
