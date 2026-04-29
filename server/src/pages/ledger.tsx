@@ -467,15 +467,15 @@ export default function Ledger() {
      * 
      * Dependency: [selectedAccount, sortOrder]
      */
-    // useEffect(() => {
-    //     if (!selectedAccount) return;
-    //     authFetch(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`)
-    //         .then((r) => r.json())
-    //         .then((data: Entry[]) =>
-    //             setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
-    //         )
-    //         .catch(console.error);
-    // }, [selectedAccount, sortOrder]);
+     useEffect(() => {
+         if (!selectedAccount) return;
+         authFetch(`/account/${selectedAccount.id}/entries?sort=${sortOrder}`)
+             .then((r) => r.json())
+             .then((data: Entry[]) =>
+                 setEntries((prev) => ({ ...prev, [selectedAccount.id]: data }))
+             )
+             .catch(console.error);
+     }, [selectedAccount, sortOrder]);
 
     /**
      * useEffect: Clear entry selection when account changes
